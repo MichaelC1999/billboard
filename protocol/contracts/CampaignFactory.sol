@@ -11,6 +11,8 @@ contract CampaignFactory {
 
     uint campaignCount = 0;
 
+    mapping(address => bool) integratorOpen;
+
     mapping(bytes32 => mapping(uint => address)) private addressesByFilter;
 
     /// campaignInitialBalance only gets set when deploying a new campaign, or called from campaign contract to lower the initial balance on a withdraw
@@ -47,8 +49,24 @@ contract CampaignFactory {
         address newCampaignAddress = address(campaignDeployed);
 
         campaignCount += 1;
-        
-
     }
 
+    function deployNewIntegrator() external {
+        /// Deploy new integrator
+        /// Add to registry on this contract
+        /// This function must be called from the integrator protocol. The address that calls this function will be instantiated in some of the other function calls
+
+        Integrator integrator = new Integrator(msg.sender);
+        integratorOpen[address(integrator)] = true;
+    }
+
+    function newPendingSpend(uint amount, address campaign) external {
+        require(campaignOpen[campaign] == true, "Campaign to update spend invalid or closed");
+        require(integratorOpen[msg.sender] == true, "This function can only be called from an open integrator contract");
+    }
+
+    function spendCompleted(uint amount, address campaign) external {
+        require(campaignOpen[campaign] == true, "Campaign to update spend invalid or closed");
+        require(integratorOpen[msg.sender] == true, "This function can only be called from an open integrator contract");
+    }
 }

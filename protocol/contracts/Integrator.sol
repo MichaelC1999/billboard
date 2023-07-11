@@ -10,7 +10,7 @@ contract Integrator {
 
     address campaignFactory;
 
-    address parentAddress;
+    address protocol;
 
     bytes32 protocolCategory;
 
@@ -23,21 +23,47 @@ contract Integrator {
     mapping(address => uint) userToInteractionNonce;
 
     /// userToCurrentAdSelected holds the current campaign to be displayed to a given user for this nonce
-    mapping(address => address) userToCurrentAdSelected;
+    mapping(address => address) private userToCurrentAdSelected;
 
     mapping(address => uint) userToCampaignCountAtSelection;
 
-    constructor() {
+    mapping(address => uint) userToPendingAmount;
+
+    constructor(address integratingProtocol) {
         /// This contract should be deployed from the integrated protocols contracts. This contract deployment saves the msg.sender address 
         /// as the address that can validly call interactionTriggered and receives payouts
-        parentAddress = msg.sender;
+        campaignFactory = msg.sender;
+        protocol = integratingProtocol;
     }
 
-    function interactionTriggered(address sender) external {
-        /// This function should be called from the integrated protocol contract, not the end users provider 
+    function interactionTriggered(bytes32 hashPassed) external {
+        /// IMPORTANT for the sake of development, we will assume for now the amount per ad is pulled from the campaign contract. In practice this will probably be calculated from other factors and changing from each request
+
+        /// Take the userAddress+curentAdCampaignAddress hash passed in from function call, generate a hash from msg.sender + displayCurrentAd() and compare
+        bytes32 onChainHash = keccak256(abi.encodePacked(msg.sender, address(this), userToCurrentAdSelected[msg.sender]));
+        require(onChainHash == hashPassed, "The interaction hash passed to the smart contract does not match the hash generated on chain.");
+
+        /// -Current campaign pending balance subtracts ad spend, treasury transfers the spend amount from ad campaign to integrator
+        /// Call campaignFactory.updatePendingSpend(userToCurrentAdSelected[msg.sender])
+
+        address completedCampaignAddress = userToCurrentAdSelected[msg.sender];
+        Campaign completedCampaign = Campaign(completedCampaignAddress);
+
+        /// -Update campaign metrics
+        completedCampaign.adExecuted();
+
         
-        address newCampaignForUser = setUserAdToDisplay(sender);
-        Campaign(newCampaignForUser).adQueued();
+        CampaignFactory factoryInstance = CampaignFactory(campaignFactory);
+        factoryInstance.spendCompleted(completedCampaign.amount(), userToCurrentAdSelected[msg.sender]);
+        
+
+        /// -getCampaignForUser() called to select and save new campaign for user
+        address campaignQueuedAddress = setUserAdToDisplay(sender);
+        Campaign campaignQueued = Campaign(campaignQueuedAddress);
+        
+        /// -Add spend amount to new campaigns pending balance 
+        factoryInstance.newPendingSpend(campaignQueued.amount(), campaignQueuedAddress);  
+
     }
 
     function displayCurrentAd() public view returns (address) {
@@ -56,8 +82,6 @@ contract Integrator {
         userToCampaignCountAtSelection[sender] = campaignCount;
         userToCurrentAdSelected[sender] = newAdCampaign;
         userToInteractionNonce[sender] += 1;
-
-
         return newAdCampaign;
     }
 
