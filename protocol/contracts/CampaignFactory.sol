@@ -9,7 +9,7 @@ import "./Campaign.sol";
 contract CampaignFactory {
     address public protocolToken;
 
-    uint campaignCount = 0;
+    uint public campaignCount = 0;
 
     mapping(address => bool) integratorOpen;
 

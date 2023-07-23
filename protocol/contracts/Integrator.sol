@@ -25,6 +25,8 @@ contract Integrator {
     /// userToCurrentAdSelected holds the current campaign to be displayed to a given user for this nonce
     mapping(address => address) private userToCurrentAdSelected;
 
+    mapping(address => bytes32) private userToCampaignHash;
+
     mapping(address => uint) userToCampaignCountAtSelection;
 
     mapping(address => uint) userToPendingAmount;
@@ -40,7 +42,7 @@ contract Integrator {
         /// IMPORTANT for the sake of development, we will assume for now the amount per ad is pulled from the campaign contract. In practice this will probably be calculated from other factors and changing from each request
 
         /// Take the userAddress+curentAdCampaignAddress hash passed in from function call, generate a hash from msg.sender + displayCurrentAd() and compare
-        bytes32 onChainHash = keccak256(abi.encodePacked(msg.sender, address(this), userToCurrentAdSelected[msg.sender]));
+        bytes32 onChainHash = sha256(abi.encodePacked(msg.sender, userToCurrentAdSelected[msg.sender], address(this)));
         require(onChainHash == hashPassed, "The interaction hash passed to the smart contract does not match the hash generated on chain.");
 
         /// -Current campaign pending balance subtracts ad spend, treasury transfers the spend amount from ad campaign to integrator
@@ -75,12 +77,17 @@ contract Integrator {
         return userToCurrentAdSelected[msg.sender];
     }
 
+    function getCurrentCampaignHash() external view returns (bytes32) {
+        return sha256(abi.encodePacked(msg.sender, userToCurrentAdSelected[msg.sender], address(this)));
+    }
+
     /// Should only be called from function that records an interaction has been made on the integrator protocol
     function setUserAdToDisplay(address sender) internal returns (address) {
         CampaignFactory factory = CampaignFactory(campaignFactory);
         (address newAdCampaign, uint campaignCount) = factory.getCampaignForUser(protocolCategory, sender, userToInteractionNonce[sender], userToCampaignCountAtSelection[sender]);
         userToCampaignCountAtSelection[sender] = campaignCount;
         userToCurrentAdSelected[sender] = newAdCampaign;
+
         userToInteractionNonce[sender] += 1;
         return newAdCampaign;
     }

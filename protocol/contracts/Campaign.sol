@@ -16,10 +16,13 @@ contract Campaign {
 
     address campaignFactoryAddress;
 
-    constructor(address initiator, bytes32 category, bytes32 protocolName, uint initialAdSpend) {
+    string public campaignContent;
+
+    constructor(address initiator, bytes32 category, bytes32 protocolName, uint initialAdSpend, string memory campaignContentParam) {
         campaignInitiator = initiator;
         baseAdSpend = initialAdSpend;
         campaignFactoryAddress = msg.sender;
+        campaignContent = campaignContentParam;
         /// Upon deployment, initiate enabled as false and send an assertTruth UMA protocol call
         /// transfer USDC/DAI from protocol that initiated campaign to treasury
     }
