@@ -9,7 +9,7 @@ contract Treasury {
     address public protocolToken;
     address public campaignRegistry; 
 
-    function initialize(address tokenAddress, address campaignRegistryAddress) external {
+    constructor(address tokenAddress, address campaignRegistryAddress) {
         protocolToken = tokenAddress;
         campaignRegistry = campaignRegistryAddress;
     }
@@ -37,7 +37,7 @@ contract Treasury {
         } else {
             integratorRevenueBySource[integrator][campaign] += amount;
             integratorSourceCount[integrator] += 1;
-            integratorRevenueSources[integratorSourceCount[integrator]] = campaign;
+            integratorRevenueSources[integrator][integratorSourceCount[integrator]] = campaign;
         }
 
         return campaignSpendRemaining[campaign];
@@ -55,7 +55,7 @@ contract Treasury {
         integratorSourceCount[integrator] = 0;
     }
 
-    function getAvailableAdSpend() external returns (uint) {
+    function getAvailableAdSpend() external view returns (uint) {
         return (campaignSpendRemaining[msg.sender] - campaignSpendPending[msg.sender]);
     }
 }

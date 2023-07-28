@@ -2,6 +2,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./CampaignFactory.sol";
+import "./Treasury.sol";
 
 /// @title Campaign
 /// @author Michael Manzano
@@ -10,25 +11,31 @@ contract Campaign {
 
     bool enabled = false;
 
-    uint baseAdSpend;
+    uint public baseAdSpend;
 
     address campaignInitiator;
 
     address campaignFactoryAddress;
 
+    string public campaignTitle;
+
     string public campaignContent;
 
-    constructor(address initiator, bytes32 category, bytes32 protocolName, uint initialAdSpend, string memory campaignContentParam) {
+    string campaignCategory;
+
+    constructor(address initiator, string memory category, string memory protocolName, uint initialAdSpend, string memory campaignTitleParam, string memory campaignContentParam) {
         campaignInitiator = initiator;
         baseAdSpend = initialAdSpend;
         campaignFactoryAddress = msg.sender;
+        campaignTitle = campaignTitleParam;
         campaignContent = campaignContentParam;
+        campaignCategory = category;
         /// Upon deployment, initiate enabled as false and send an assertTruth UMA protocol call
         /// transfer USDC/DAI from protocol that initiated campaign to treasury
     }
 
     function remainingAvailableAdSpend() public view returns (uint) {
-        address treasuryAddress = CampaignFactory(campaignFactoryAddress).getTreasuryAddress();
+        address treasuryAddress = CampaignFactory(campaignFactoryAddress).treasuryAddress();
         Treasury treasury = Treasury(treasuryAddress);
         return treasury.getAvailableAdSpend();
     }

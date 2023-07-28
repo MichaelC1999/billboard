@@ -2,6 +2,8 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./CampaignFactory.sol";
+import "./Campaign.sol";
+
 
 /// @title Integrator
 /// @author Michael Manzano
@@ -12,7 +14,7 @@ contract Integrator {
 
     address protocol;
 
-    bytes32 protocolCategory;
+    string protocolCategory;
 
     uint protocolAdPriceBucket;
 
@@ -56,15 +58,15 @@ contract Integrator {
 
         
         CampaignFactory factoryInstance = CampaignFactory(campaignFactory);
-        factoryInstance.spendCompleted(completedCampaign.amount(), userToCurrentAdSelected[msg.sender]);
+        factoryInstance.spendCompleted(userToCurrentAdSelected[msg.sender]);
         
 
         /// -getCampaignForUser() called to select and save new campaign for user
-        address campaignQueuedAddress = setUserAdToDisplay(sender);
+        address campaignQueuedAddress = setUserAdToDisplay(msg.sender);
         Campaign campaignQueued = Campaign(campaignQueuedAddress);
         
         /// -Add spend amount to new campaigns pending balance 
-        factoryInstance.newPendingSpend(campaignQueued.amount(), campaignQueuedAddress);  
+        factoryInstance.newPendingSpend(campaignQueuedAddress);  
 
     }
 
