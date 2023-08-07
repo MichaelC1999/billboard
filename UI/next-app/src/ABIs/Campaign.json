@@ -7,6 +7,11 @@
                 "type": "address"
             },
             {
+                "internalType": "address",
+                "name": "treasury",
+                "type": "address"
+            },
+            {
                 "internalType": "string",
                 "name": "category",
                 "type": "string"
@@ -34,13 +39,6 @@
         ],
         "stateMutability": "nonpayable",
         "type": "constructor"
-    },
-    {
-        "inputs": [],
-        "name": "adExecuted",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
     },
     {
         "inputs": [],
@@ -89,6 +87,32 @@
         "type": "function"
     },
     {
+        "inputs": [],
+        "name": "cumulativeAdQueued",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "cumulativeAdViews",
+        "outputs": [
+            {
+                "internalType": "uint256",
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "inputs": [
             {
                 "internalType": "uint256",
@@ -111,6 +135,20 @@
     {
         "inputs": [],
         "name": "enableCampaign",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "incCumulativeAdQueued",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "incCumulativeAdViews",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"

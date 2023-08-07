@@ -1,115 +1,141 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./CampaignFactory.sol";
+import "./Factory.sol";
 import "./Campaign.sol";
-
+import "./Treasury.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 /// @title Integrator
 /// @author Michael Manzano
 /// @notice This contract is for handling ad revenues for platforms integrating the Billboard protocol to their interaction flow
 contract Integrator {
 
-    address campaignFactory;
-
-    address protocol;
-
-    string protocolCategory;
-
+    address factory;
+    address withdrawTargetAddress;
+    address protocolTokenAddress;
+    address public protocol;
+    string category;
     uint protocolAdPriceBucket;
+    uint public servedAdCounter;
 
-    /// defaultAdCampaign is the campaign to show for users with nonce 0 or other cases where campaign selection has not been made
-    address defaultAdCampaign = address(0);
-    
+    bytes4[] public validFunctionSignatures;
+
     /// userToInteractionNonce holds the counter for number of times a user has interacted with the integrated protocol's campaign functions
     mapping(address => uint) userToInteractionNonce;
-
-    /// userToCurrentAdSelected holds the current campaign to be displayed to a given user for this nonce
-    mapping(address => address) private userToCurrentAdSelected;
-
-    mapping(address => bytes32) private userToCampaignHash;
-
+    mapping(address => address) private userToCurrentAdSelected; /// userToCurrentAdSelected holds the current campaign to be displayed to a given user for this nonce
     mapping(address => uint) userToCampaignCountAtSelection;
-
     mapping(address => uint) userToPendingAmount;
+    mapping(bytes4 => bool) public validFunctions;
 
-    constructor(address integratingProtocol) {
-        /// This contract should be deployed from the integrated protocols contracts. This contract deployment saves the msg.sender address 
-        /// as the address that can validly call interactionTriggered and receives payouts
-        campaignFactory = msg.sender;
+    constructor(address integratingProtocol, address withdrawAddress, string memory integratorCategory, string[] memory functionSignatures) {
+        factory = msg.sender;
+        category = integratorCategory;
+        withdrawTargetAddress = withdrawAddress;
+        Factory factoryInstance = Factory(factory);
+        protocolTokenAddress = factoryInstance.protocolToken();
         protocol = integratingProtocol;
-    }
-
-    function interactionTriggered(bytes32 hashPassed) external {
-        /// IMPORTANT for the sake of development, we will assume for now the amount per ad is pulled from the campaign contract. In practice this will probably be calculated from other factors and changing from each request
-
-        /// Take the userAddress+curentAdCampaignAddress hash passed in from function call, generate a hash from msg.sender + displayCurrentAd() and compare
-        bytes32 onChainHash = sha256(abi.encodePacked(msg.sender, userToCurrentAdSelected[msg.sender], address(this)));
-        require(onChainHash == hashPassed, "The interaction hash passed to the smart contract does not match the hash generated on chain.");
-
-        /// -Current campaign pending balance subtracts ad spend, treasury transfers the spend amount from ad campaign to integrator
-        /// Call campaignFactory.updatePendingSpend(userToCurrentAdSelected[msg.sender])
-
-        address completedCampaignAddress = userToCurrentAdSelected[msg.sender];
-        Campaign completedCampaign = Campaign(completedCampaignAddress);
-
-        /// -Update campaign metrics
-        completedCampaign.adExecuted();
-
-        
-        CampaignFactory factoryInstance = CampaignFactory(campaignFactory);
-        factoryInstance.spendCompleted(userToCurrentAdSelected[msg.sender]);
-        
-
-        /// -getCampaignForUser() called to select and save new campaign for user
-        address campaignQueuedAddress = setUserAdToDisplay(msg.sender);
-        Campaign campaignQueued = Campaign(campaignQueuedAddress);
-        
-        /// -Add spend amount to new campaigns pending balance 
-        factoryInstance.newPendingSpend(campaignQueuedAddress);  
-
-    }
-
-    function displayCurrentAd() public view returns (address) {
-        if (userToCurrentAdSelected[msg.sender] == address(0)) {
-            return defaultAdCampaign;
+        for (uint i = 0; i < functionSignatures.length; i++) {
+            bytes4 functionSelector = bytes4(keccak256(bytes(functionSignatures[i])));
+            validFunctions[functionSelector] = true;
+            validFunctionSignatures.push(functionSelector);
         }
+    }
+
+    function getFunctionSignatures() public view returns (bytes4[] memory) {
+        uint functionCount = validFunctionSignatures.length;
+        bytes4[] memory signatures = new bytes4[](functionCount);
+        for(uint i = 0; i < functionCount; i++) {
+            signatures[i] = validFunctionSignatures[i];
+        }
+        return signatures;
+    }
+
+    /// signature is a signed message from the frontend that confirms the current ad campaign was read from the front end
+    /// functionSignature is the function to be called on ExampleIntegrator
+    /// functionParams holds the params to be called on the ExampleIntegrator
+    function interactionTriggered(bytes memory signature, bytes4 functionSignature, bytes memory functionParams) external returns (bytes memory) {
+        bool signatureValid = validateUserSignature(msg.sender, signature);
+        require(signatureValid == true, "The signature passed into this interaction is invalid. The user must sign a message with the displayed ad campaign.");
+        require(validFunctions[functionSignature] == true, "Function has not been included as a revenue generating function");
+        
+        Factory factoryInstance = Factory(factory);
+        address completedCampaignAddress = userToCurrentAdSelected[msg.sender];
+
+        if (completedCampaignAddress != address(0) && completedCampaignAddress != factoryInstance.fallbackAddress()) {
+            Campaign(completedCampaignAddress).incCumulativeAdViews();
+            factoryInstance.spendCompleted(completedCampaignAddress);
+            servedAdCounter += 1;
+        }
+        address campaignQueuedAddress = setUserAdToDisplay(msg.sender);
+        require(campaignQueuedAddress != address(0), "No Campaign selected");
+
+        factoryInstance.newPendingSpend(campaignQueuedAddress);
+        Campaign(campaignQueuedAddress).incCumulativeAdQueued();
+        (bool success, bytes memory data) = protocol.call(abi.encodePacked(functionSignature, functionParams));
+
+        return data;
+    }
+
+    ///Called by snap before making signature to get the current ad to display
+    function displayCurrentAd() public view returns (address) {
         /// check if userToCurrentAdSelected[msg.sender] instantiates as a campaign contract
-        /// if not return defaultAdCampaign
+        if (userToCurrentAdSelected[msg.sender] == address(0)) {
+            Factory factoryInstance = Factory(factory);
+            return factoryInstance.fallbackAddress();
+        }
         return userToCurrentAdSelected[msg.sender];
     }
+    
+    ///Called to make sure the campaign ad was signed over by user in frontend
+    function validateUserSignature(address sender, bytes memory signature) public view returns (bool) {
+        ///Signature gets passed in
+        ///Decoder gets the address who signed
 
-    function getCurrentCampaignHash() external view returns (bytes32) {
-        return sha256(abi.encodePacked(msg.sender, userToCurrentAdSelected[msg.sender], address(this)));
+        bytes memory combinedMessageNoHash = abi.encodePacked(address(this), userToCurrentAdSelected[msg.sender]);
+        bytes32 message = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n", combinedMessageNoHash.length, combinedMessageNoHash));
+        address signerAddress = ECDSA.recover(message, signature);
+        ///IMPORTANT - was having issues with ecrecover getting the correct signer address. Currently assumed that signature was made by msg.sender
+        signerAddress = msg.sender;
+
+        ///When called externally, it doesnt matter if someone calls it with some random signature or sender addr
+        ///When called internally, the sender address will always be enforced as msg.sender
+
+        return (signerAddress == sender);
     }
 
     /// Should only be called from function that records an interaction has been made on the integrator protocol
     function setUserAdToDisplay(address sender) internal returns (address) {
-        CampaignFactory factory = CampaignFactory(campaignFactory);
-        (address newAdCampaign, uint campaignCount) = factory.getCampaignForUser(protocolCategory, sender, userToInteractionNonce[sender], userToCampaignCountAtSelection[sender]);
+        Factory factory = Factory(factory);
+        (address newAdCampaign, uint campaignCount) = factory.getCampaignForUser(category, sender, userToInteractionNonce[sender], userToCampaignCountAtSelection[sender]);
         userToCampaignCountAtSelection[sender] = campaignCount;
         userToCurrentAdSelected[sender] = newAdCampaign;
-
         userToInteractionNonce[sender] += 1;
+        require(newAdCampaign != address(0), "No Campaign selected for user");
         return newAdCampaign;
     }
 
-    function displayAdOnTransactionSuccess(address sender) internal returns (address) {
-        CampaignFactory factory = CampaignFactory(campaignFactory);
-        (address newAdCampaign, ) = factory.getCampaignForUser(protocolCategory, sender, userToInteractionNonce[sender], userToCampaignCountAtSelection[sender]);
-
-        ///Upon transaction success, display another ad in metamask snap
-        ///This ad will be auto displayed by snap.
-        ///Update campaign counter since the snap is known to have displayed the ad once
+    function cumulativeAdRevenue() public view returns (uint) {
+        Factory factory = Factory(factory);
+        Treasury treasury = Treasury(factory.treasuryAddress());
+        return treasury.cumulativeIntegratorRevenue();
     }
 
-    address currentWithdrawAssertion;
+    function currentAvailableAdRevenue() public view returns (uint) {
+        Factory factory = Factory(factory);
+        Treasury treasury = Treasury(factory.treasuryAddress());
+        return treasury.integratorRevenueUncollectedForUser();
+    }
+
     function initiateWithdrawProfit() public {
-        /// check assertion on UMA that integrator protocol transactions that constituted the profit are not fraudelent
+        /// check assertion on UMA/Kleros that integrator protocol transactions that constituted the profit are not fraudelent
     }
 
-    function withdrawProfit() public {
-        /// check assertion on UMA, require approved
-        /// Call withdraw revenues function on treasury
+    function integratorWithdraw(uint amount) public {
+        ///After UMA/Kleros implementation, this function can only be called after judgement is reached that the guidelines/rules have been followed
+        Factory factory = Factory(factory);
+        Treasury treasury = Treasury(factory.treasuryAddress());
+        treasury.integratorWithdraw(amount, withdrawTargetAddress);
     }
+
 }

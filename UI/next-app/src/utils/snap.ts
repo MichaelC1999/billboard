@@ -20,13 +20,18 @@ export const getSnaps = async (): Promise<GetSnapsResponse> => {
  */
 export const connectSnap = async (
   snapId: string = defaultSnapOrigin,
+  address: string,
   params: Record<'version' | string, unknown> = {},
 ) => {
   await window.ethereum.request({
     method: 'wallet_requestSnaps',
     params: {
-      [snapId]: params,
+      [snapId]: params
     },
+  });
+  await window.ethereum.request({
+    method: 'wallet_invokeSnap',
+    params: { snapId: defaultSnapOrigin, request: { method: 'saveIntegratorAddress', integratorAddress: address } },
   });
 };
 

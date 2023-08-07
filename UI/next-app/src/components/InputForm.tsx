@@ -63,7 +63,6 @@ const InputForm = ({ inputs, setInputs, handleSubmit, title, elements }: any) =>
                 }
             })}
             <Button
-                type="submit"
                 fullWidth
                 variant="contained"
                 color="primary"

@@ -8,15 +8,36 @@ const hre = require("hardhat");
 
 async function main() {
 
-  const lock = await hre.ethers.deployContract("CampaignFactory", [hre.ethers.ZeroAddress], {
+  // Deploy protocol token, pass to factory
+  // const token = await (await hre.ethers.deployContract("ProtocolToken", [], {
+  //   value: hre.ethers.parseEther("0.00"),
+  // })).waitForDeployment();
+
+  const lock = await hre.ethers.deployContract("Factory", ["0x0Fee01307489902AcA31B11455A98dD1C5e00Dcd"], {
     value: hre.ethers.parseEther("0.00"),
   });
 
   const contract = await lock.waitForDeployment();
 
-  console.log(contract.target)
+  const factory = await hre.ethers.getContractAt("Factory", contract.target)
 
-  const factory = await hre.ethers.getContractAt("CampaignFactory", contract.target)
+  // const ExInt = await hre.ethers.deployContract("ExampleIntegrator", [], {
+  //   value: hre.ethers.parseEther("0.00"),
+  // })
+
+
+
+  console.log("Factory: " + contract.target)
+  const treasuryAddress = await factory.treasuryAddress()
+  //read treasury address from contract
+  console.log("treasuryAddress", treasuryAddress, "DEF", await factory.fallbackAddress())
+
+  console.log("tokenAddress", await factory.protocolToken())
+
+
+  const treasury = await hre.ethers.getContractAt("Treasury", treasuryAddress)
+
+  console.log(await treasury.protocolToken())
 
 
 }

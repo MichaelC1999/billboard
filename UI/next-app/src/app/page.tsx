@@ -8,6 +8,8 @@ import { Web3Button } from '../components/Web3Button'
 import { WriteContract } from '../components/WriteContract'
 import { connectSnap, getSnap } from '../utils'
 import { MetaMaskContext } from '../hooks'
+import { defaultSnapOrigin } from '../config'
+import { SignMessage } from '../components/SignMessage'
 
 export function Page() {
   const [state, dispatch] = useContext(MetaMaskContext);
@@ -26,7 +28,7 @@ export function Page() {
       });
       const isFlaskDetected = (clientVersion as string[])?.includes('flask');
 
-      await connectSnap();
+      await connectSnap(defaultSnapOrigin, "TEST", {});
       const installedSnap = await getSnap();
       console.log(isFlaskDetected, providerEth, installedSnap)
       return Boolean(providerEth && isFlaskDetected);
@@ -52,6 +54,7 @@ export function Page() {
         <hr />
         <h2>Write Contract</h2>
         <WriteContract />
+        <SignMessage />
       </Connected>
     </>
   )

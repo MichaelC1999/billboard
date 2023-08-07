@@ -1,7 +1,7 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./CampaignFactory.sol";
+import "./Factory.sol";
 import "./Treasury.sol";
 
 /// @title Campaign
@@ -10,62 +10,62 @@ import "./Treasury.sol";
 contract Campaign {
 
     bool enabled = false;
-
     uint public baseAdSpend;
-
+    uint public cumulativeAdViews;
+    uint public cumulativeAdQueued;
     address campaignInitiator;
-
-    address campaignFactoryAddress;
-
+    address factoryAddress;
+    address treasuryAddress;
+    string campaignCategory;
     string public campaignTitle;
-
     string public campaignContent;
 
-    string campaignCategory;
-
-    constructor(address initiator, string memory category, string memory protocolName, uint initialAdSpend, string memory campaignTitleParam, string memory campaignContentParam) {
+    constructor(address initiator, address treasury, string memory category, string memory protocolName, uint initialAdSpend, string memory campaignTitleParam, string memory campaignContentParam) {
         campaignInitiator = initiator;
-        baseAdSpend = initialAdSpend;
-        campaignFactoryAddress = msg.sender;
+        treasuryAddress = treasury;
+        if (keccak256(abi.encodePacked(category)) != keccak256(abi.encodePacked("fallback"))) {
+            depositSpend(initialAdSpend);
+        }
+        factoryAddress = msg.sender;
         campaignTitle = campaignTitleParam;
         campaignContent = campaignContentParam;
         campaignCategory = category;
-        /// Upon deployment, initiate enabled as false and send an assertTruth UMA protocol call
-        /// transfer USDC/DAI from protocol that initiated campaign to treasury
+    }
+
+    function incCumulativeAdViews() external {
+        cumulativeAdViews += 1;
+    }
+
+    function incCumulativeAdQueued() external {
+        cumulativeAdQueued += 1;
     }
 
     function remainingAvailableAdSpend() public view returns (uint) {
-        address treasuryAddress = CampaignFactory(campaignFactoryAddress).treasuryAddress();
         Treasury treasury = Treasury(treasuryAddress);
         return treasury.getAvailableAdSpend();
     }
 
     function withdrawSpend(uint amount) public {
+        require(msg.sender == campaignInitiator, "Campaign fund withdraw can only be initiated by campaign deployer.");
         if (amount < baseAdSpend) {
-        baseAdSpend -= amount;
+            baseAdSpend -= amount;
         } else {
             baseAdSpend = 0;
         }
-
-        ///Reorder protocols in CampaignFactory by baseAdSpend
-        /// transfer tokens back to campaignInitiator
+        Treasury(treasuryAddress).campaignWithdraw(amount, campaignInitiator);
     }
 
     function depositSpend(uint amount) public {
-
+        address initiator = msg.sender;
+        if (initiator == address(this)) {
+            initiator = campaignInitiator;
+        }
         baseAdSpend += amount;
-        ///Reorder protocols in CampaignFactory by baseAdSpend
-        /// transfer tokens to treasury
-    }
-
-    function adExecuted() public {
-        /// This function records the effects from queueing an ad to a user
-        /// Update local metrics
+        Treasury(treasuryAddress).depositSpend(amount, initiator);
     }
 
     function enableCampaign() public {
-        /// requires UMA protocol assertion as valid
-        /// changes enabled variable on this contract and that of factory mapping
+
     }
 
     function disableCampaign() public {
@@ -73,7 +73,7 @@ contract Campaign {
     }
 
     function campaignRejected() public {
-        /// if UMA assertion is rejected, refund all deposited ad spend
+
     }
 
 

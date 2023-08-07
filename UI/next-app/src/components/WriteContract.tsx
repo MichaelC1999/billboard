@@ -43,7 +43,6 @@ export function WriteContract() {
           method: 'wallet_invokeSnap',
           params: { snapId: defaultSnapOrigin, request: { method: 'signAd' } },
         });
-        console.log(prompt, 'prompt response')
       }}>
         Check
       </button>

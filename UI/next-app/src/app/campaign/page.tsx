@@ -7,164 +7,42 @@ import { useRouter } from 'next/navigation'
 import CampaignListItem from "../../components/CampaignListItem";
 import { useContractRead, useContractReads } from "wagmi";
 import { wagmiContractConfig } from "../../components/contracts";
-import CampaignFactoryABI from "../../ABIs/CampaignFactory.json"
+import FactoryABI from "../../ABIs/Factory.json"
 import { decodeFunctionResult, stringToHex, toBytes, zeroAddress } from "viem";
 import { encodeFunctionData } from 'viem'
 
 
 const CampaignList = () => {
     const router = useRouter()
+    const currentAccount = window.ethereum.selectedAddress;
 
-    const campaignFactoryAddress = "0x793d3503f679607e2BA6620A44465Ba01F4F9fb7";
-    const [campaigns, setCampaigns] = useState<string[]>([]);
+    const factoryAddress = process.env.factoryAddress;
+    const [campaigns, setCampaigns] = useState<{ [x: string]: string[] }>({});
 
-    const getLendCampaigns = async () => {
+    const getCampaigns = async (category: string) => {
         try {
             const encodedTxData = encodeFunctionData({
-                abi: CampaignFactoryABI,
-                functionName: 'getAddresses',
-                args: ['lend']
+                abi: FactoryABI,
+                functionName: 'getCampaignAddresses',
+                args: [category]
             })
             const dataToDecode: any = await window.ethereum.request({
                 method: "eth_call",
                 params: [{
-                    from: "0x1CA2b10c61D0d92f2096209385c6cB33E3691b5E",
-                    to: campaignFactoryAddress,
+                    from: currentAccount,
+                    to: factoryAddress,
                     data: encodedTxData,
                     accessList: []
                 }, null]
             })
-            console.log(dataToDecode, encodedTxData, "LIST")
             if (dataToDecode?.length > 0) {
                 const decode = decodeFunctionResult({
-                    abi: CampaignFactoryABI,
-                    functionName: 'getAddresses',
+                    abi: FactoryABI,
+                    functionName: 'getCampaignAddresses',
                     data: dataToDecode
                 })
-                console.log('DECODE: ', decode)
                 setCampaigns((prevState) => {
-                    let elementsToAdd = [];
-                    if (Array.isArray(decode)) {
-                        elementsToAdd = decode.filter((addr: string) => !prevState.includes(addr));
-                    }
-                    return [...prevState, ...elementsToAdd] as any
-                })
-            }
-        } catch (err) {
-            console.log(err)
-        }
-    }
-
-    const getNftCampaigns = async () => {
-
-        try {
-            const encodedTxData = encodeFunctionData({
-                abi: CampaignFactoryABI,
-                functionName: 'getAddresses',
-                args: ['nft']
-            })
-            const dataToDecode: any = await window.ethereum.request({
-                method: "eth_call",
-                params: [{
-                    from: "0x1CA2b10c61D0d92f2096209385c6cB33E3691b5E",
-                    to: campaignFactoryAddress,
-                    data: encodedTxData,
-                    accessList: []
-                }, null]
-            })
-            console.log(dataToDecode, encodedTxData, "LIST")
-            if (dataToDecode?.length > 0) {
-                const decode = decodeFunctionResult({
-                    abi: CampaignFactoryABI,
-                    functionName: 'getAddresses',
-                    data: dataToDecode
-                })
-                console.log('DECODE: ', decode)
-                setCampaigns((prevState) => {
-
-                    let elementsToAdd = [];
-                    if (Array.isArray(decode)) {
-                        elementsToAdd = decode.filter((addr: string) => !prevState.includes(addr));
-                    }
-                    return [...prevState, ...elementsToAdd] as any
-                })
-            }
-        } catch (err) {
-            console.log(err)
-        }
-    }
-
-    const getDexCampaigns = async () => {
-
-        try {
-            const encodedTxData = encodeFunctionData({
-                abi: CampaignFactoryABI,
-                functionName: 'getAddresses',
-                args: ['dex']
-            })
-            const dataToDecode: any = await window.ethereum.request({
-                method: "eth_call",
-                params: [{
-                    from: "0x1CA2b10c61D0d92f2096209385c6cB33E3691b5E",
-                    to: campaignFactoryAddress,
-                    data: encodedTxData,
-                    accessList: []
-                }, null]
-            })
-            console.log(dataToDecode, encodedTxData, "LIST")
-            if (dataToDecode?.length > 0) {
-                const decode = decodeFunctionResult({
-                    abi: CampaignFactoryABI,
-                    functionName: 'getAddresses',
-                    data: dataToDecode
-                })
-                console.log('DECODE: ', decode)
-                setCampaigns((prevState) => {
-
-                    let elementsToAdd = [];
-                    if (Array.isArray(decode)) {
-                        elementsToAdd = decode.filter((addr: string) => !prevState.includes(addr));
-                    }
-                    return [...prevState, ...elementsToAdd] as any
-                })
-            }
-        } catch (err) {
-            console.log(err)
-        }
-    }
-
-    const getOtherCampaigns = async () => {
-
-        try {
-            const encodedTxData = encodeFunctionData({
-                abi: CampaignFactoryABI,
-                functionName: 'getAddresses',
-                args: ['other']
-            })
-            const dataToDecode: any = await window.ethereum.request({
-                method: "eth_call",
-                params: [{
-                    from: "0x1CA2b10c61D0d92f2096209385c6cB33E3691b5E",
-                    to: campaignFactoryAddress,
-                    data: encodedTxData,
-                    accessList: []
-                }, null]
-            })
-            console.log(dataToDecode, encodedTxData, "LIST")
-            if (dataToDecode?.length > 0) {
-                const decode = decodeFunctionResult({
-                    abi: CampaignFactoryABI,
-                    functionName: 'getAddresses',
-                    data: dataToDecode
-                })
-                console.log('DECODE: ', decode)
-                setCampaigns((prevState) => {
-
-                    let elementsToAdd = [];
-                    if (Array.isArray(decode)) {
-                        elementsToAdd = decode.filter((addr: string) => !prevState.includes(addr));
-                    }
-                    return [...prevState, ...elementsToAdd] as any
+                    return { ...prevState, [category]: decode }
                 })
             }
         } catch (err) {
@@ -173,19 +51,14 @@ const CampaignList = () => {
     }
 
     useEffect(() => {
-        getLendCampaigns()
-        getDexCampaigns()
-        getNftCampaigns()
-        getOtherCampaigns()
+        getCampaigns("lend")
+        getCampaigns('dex')
+        getCampaigns('nft')
+        getCampaigns('other')
     }, [])
 
-    useEffect(() => {
-        console.log(campaigns, "CAMPAIGNS")
-    }, [campaigns])
-
-
     return (
-        <Container maxWidth="sm">
+        <Container maxWidth="lg">
             <Typography variant="h6" color="primary" gutterBottom>
                 Campaigns
             </Typography>
@@ -194,12 +67,25 @@ const CampaignList = () => {
                     <TableHead>
                         <TableRow>
                             <TableCell>Campaign Address</TableCell>
+                            <TableCell>Category</TableCell>
+                            <TableCell>Campaign Title</TableCell>
+                            <TableCell>cumulativeAdViews</TableCell>
+                            <TableCell>cumulativeAdQueued</TableCell>
+                            <TableCell>Base Ad Spend</TableCell>
+                            <TableCell>Remaining Ad Spend</TableCell>
+
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {campaigns.map((campaign) => {
+                        {Object.keys(campaigns).map((category: string) => {
                             return (
-                                <CampaignListItem key={campaign} address={campaign} />
+                                <>
+                                    {campaigns[category].map((campaignAddress: string) => {
+                                        return (
+                                            <CampaignListItem key={campaignAddress} category={category} address={campaignAddress} />
+                                        )
+                                    })}
+                                </>
                             )
                         })}
                     </TableBody>
