@@ -77,7 +77,7 @@ const IntegratorListItem = ({ address, category }: any) => {
             <TableCell>
                 <Typography
                     variant="body1"
-                    style={{ cursor: 'pointer', color: 'blue', textDecoration: 'underline' }}
+                    style={{ cursor: 'pointer', textDecoration: 'underline' }}
                     onClick={() => router.push(`/integrator/${address}`)}
                 >
                     {address}
@@ -86,7 +86,7 @@ const IntegratorListItem = ({ address, category }: any) => {
             <TableCell>{category}</TableCell>
             <TableCell>{integratorData?.protocol}</TableCell>
             <TableCell>{integratorData?.getFunctionSignatures?.join(", ")}</TableCell>
-            <TableCell>{integratorData?.servedAdCounter}</TableCell>
+            <TableCell>{integratorData?.servedAdCounter.toString()}</TableCell>
             <TableCell>{formatTokenDecimals(integratorData?.currentAvailableAdRevenue)} BILL</TableCell>
             <TableCell>{formatTokenDecimals(integratorData?.cumulativeAdRevenue)} BILL</TableCell>
         </TableRow>

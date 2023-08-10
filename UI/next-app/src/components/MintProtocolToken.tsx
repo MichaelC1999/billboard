@@ -1,11 +1,20 @@
-import { Button, TextField, Typography, CircularProgress } from "@material-ui/core";
+import { Button, TextField, Typography, CircularProgress, Container, Grid, makeStyles } from "@material-ui/core";
 import { useContractWrite, useWaitForTransaction } from 'wagmi'
 import ProtocolTokenABI from "../ABIs/ProtocolToken.json"
-import { wagmiContractConfig } from './contracts'
 import { stringify } from '../utils/stringify'
 import { BaseError } from "viem";
 
+const useStyles = makeStyles((theme) => ({
+    button: {
+        marginTop: theme.spacing(2),
+        marginBottom: theme.spacing(2),
+        width: '600px', // Button takes full width
+    },
+}));
+
 function MintProtocolToken() {
+    const classes = useStyles();
+
     const protocolTokenAddress: any = process.env.protocolTokenAddress
     const currentAccount = window.ethereum.selectedAddress;
 
@@ -28,22 +37,21 @@ function MintProtocolToken() {
     }
 
     return (
-        <div>
+        <Container maxWidth="md" style={{ margin: "32px" }}>
+            <Grid container direction="column" alignItems="center">
+                <Typography variant="h6" color="primary">Need test tokens to fund a campaign? Mint with the button below!</Typography>
+                <Button variant="contained" color="primary" disabled={isLoading} onClick={handleMint} className={classes.button}>
+                    Mint 100 BILL
+                </Button>
 
-            <Typography variant="h6">Need test tokens to fund a campaign? Mint with the button below!</Typography>
-            <Button variant="contained" color="primary" disabled={isLoading} onClick={handleMint}>
-                Mint 100 BILL
-            </Button>
-
-            {isLoading && <CircularProgress />}
-            {isPending && <Typography>Transaction pending...</Typography>}
-            {isSuccess && (
-                <>
+                {isLoading && <CircularProgress />}
+                {isPending && <Typography>Transaction pending...</Typography>}
+                {isSuccess && (
                     <Typography>Transaction Hash: {data?.hash}</Typography>
-                </>
-            )}
-            {isError && <Typography color="error">{(error as BaseError)?.shortMessage}</Typography>}
-        </div>
+                )}
+                {isError && <Typography color="error">{(error as BaseError)?.shortMessage}</Typography>}
+            </Grid>
+        </Container>
     );
 }
 

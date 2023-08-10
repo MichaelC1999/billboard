@@ -1,10 +1,28 @@
+import { createMuiTheme } from '@material-ui/core';
 import { createGlobalStyle, DefaultTheme } from 'styled-components';
 
 const breakpoints = ['600px', '768px', '992px'];
 
 /**
  * Common theme properties.
+ * 
+ * 
  */
+
+
+export const darkTheme = createMuiTheme({
+  palette: {
+    type: 'dark',
+    primary: {
+      main: '#ffffff', // White color for primary
+    },
+    background: {
+      default: '#000000', // Black background
+    },
+  },
+});
+
+
 const theme = {
   fonts: {
     default:

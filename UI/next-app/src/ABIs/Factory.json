@@ -87,6 +87,11 @@
                 "internalType": "string",
                 "name": "campaignContentParam",
                 "type": "string"
+            },
+            {
+                "internalType": "address",
+                "name": "managerAddress",
+                "type": "address"
             }
         ],
         "name": "deployNewCampaign",

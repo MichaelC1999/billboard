@@ -5,7 +5,7 @@ require('@openzeppelin/hardhat-upgrades');
 require('dotenv').config({ path: __dirname + '/.env' });
 
 module.exports = {
-  defaultNetwork: "sepolia",
+  defaultNetwork: "lineaGoerli",
   solidity: {
     version: "0.8.9",
     settings: {
@@ -40,7 +40,7 @@ module.exports = {
       accounts: [process.env.WALLET_PK]
     },
     lineaGoerli: {
-      url: "https://rpc.goerli.linea.build",
+      url: "https://linea-goerli.infura.io/v3/" + process.env.INFURA_API_KEY,
       chainId: 59140,
       accounts: [process.env.WALLET_PK]
     }

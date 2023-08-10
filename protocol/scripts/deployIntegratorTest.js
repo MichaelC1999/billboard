@@ -10,13 +10,13 @@ const hre = require("hardhat");
 
 async function main() {
 
-    const Int = await hre.ethers.deployContract("Integrator", ["0x5872f79eAaCDb230EB4Bb1Cf694B86e90769a16e", "nft", ['mintNFT(address)']], {
+    const Int = await hre.ethers.deployContract("ExampleIntegrator", [], {
         value: hre.ethers.parseEther("0.00"),
     })
 
     const IntContract = await Int.waitForDeployment()
 
-    console.log(" Integrator: " + IntContract.target)
+    console.log(" Verify: " + IntContract.target)
 
 
 

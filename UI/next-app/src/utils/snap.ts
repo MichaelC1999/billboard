@@ -22,17 +22,15 @@ export const connectSnap = async (
   snapId: string = defaultSnapOrigin,
   address: string,
   params: Record<'version' | string, unknown> = {},
-) => {
-  await window.ethereum.request({
+): Promise<{ [x: string]: any }> => {
+  const snaps = await window.ethereum.request({
     method: 'wallet_requestSnaps',
     params: {
       [snapId]: params
     },
   });
-  await window.ethereum.request({
-    method: 'wallet_invokeSnap',
-    params: { snapId: defaultSnapOrigin, request: { method: 'saveIntegratorAddress', integratorAddress: address } },
-  });
+  console.log(snaps, 'snaps')
+  return snaps || {}
 };
 
 /**
@@ -44,26 +42,14 @@ export const connectSnap = async (
 export const getSnap = async (version?: string): Promise<Snap | undefined> => {
   try {
     const snaps = await getSnaps();
-
-    return Object.values(snaps).find(
-      (snap) =>
-        snap.id === defaultSnapOrigin && (!version || snap.version === version),
+    return Object.values(snaps).find((snap) => {
+      return snap.id === defaultSnapOrigin && (!version || snap.version === version)
+    }
     );
   } catch (e) {
     console.log('Failed to obtain installed snap', e);
     return undefined;
   }
-};
-
-/**
- * Invoke the "signAd" method from the example snap.
- */
-
-export const signAd = async () => {
-  await window.ethereum.request({
-    method: 'wallet_invokeSnap',
-    params: { snapId: defaultSnapOrigin, request: { method: 'signAd' } },
-  });
 };
 
 export const isLocalSnap = (snapId: string) => snapId.startsWith('local:');

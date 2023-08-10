@@ -7,26 +7,43 @@ import { decodeEventLog, stringToHex } from "viem";
 import { useRouter } from 'next/navigation'
 import { useNetwork, useBalance } from 'wagmi'
 import InputForm from "../../../components/InputForm";
-import { Box, Button, Container, Grid } from "@material-ui/core";
+import { Box, Button, Container, Grid, ThemeProvider, Typography, makeStyles } from "@material-ui/core";
 import FactoryABI from "../../../ABIs/Factory.json"
+import { darkTheme } from "../../../config/theme";
+import Header from "../../../components/Header";
 
-
-//This page is for the integrator deployment 
-
+const useStyles = makeStyles((theme) => ({
+    txContainer: {
+        marginTop: theme.spacing(3),
+        marginBottom: theme.spacing(3),
+        padding: "24px"
+    },
+}));
 
 function Integrator() {
     const router = useRouter()
+    const classes = useStyles();
+
     const exampleProtocolAddr = process.env.exampleProtocol
     const factoryAddress = process.env.factoryAddress;
+
+    const { isConnected } = useAccount()
+
+    useEffect(() => {
+        if (!isConnected) {
+            window?.ethereum?.enable()
+        }
+    }, [])
 
     const { write, data, isSuccess, isLoading } = useContractWrite({
         abi: FactoryABI,
         address: factoryAddress,
         functionName: 'deployNewIntegrator',
-        chainId: 11155111
+        chainId: Number(process.env.CHAIN_ID || 1)
     })
 
     const { data: receiptTx, isLoading: isPendingTx, isSuccess: isSuccessTx } = useWaitForTransaction({ hash: data?.hash })
+
 
     useEffect(() => {
         if (receiptTx) {
@@ -37,19 +54,21 @@ function Integrator() {
                 topics: receiptTx.logs[0].topics
             })
             console.log(topics.args._address, "TOPICS DECODED - GET INT ADDR")
+            if (topics.args._address) {
+                setDeployedAddr(topics.args._address)
+            }
         }
-        if (isSuccessTx && !isPendingTx) {
-            router.push('/integrator/')
-        }
+
     }, [isSuccessTx])
 
     const [inputs, setInputs] = useState<any>({});
+    const [deployedAddr, setDeployedAddr] = useState<string>("")
     const [funcSigCount, setFuncSigCount] = useState(1);
 
     const elements = [
         {
-            label: "Integrator Protocol Address",
-            name: "protocolAddress",
+            label: "External Protocol Contract Address",
+            name: "externalProtocol",
             type: "text"
         },
         {
@@ -68,6 +87,16 @@ function Integrator() {
             name: `functionSignature${i + 1}`,
             type: "text"
         })),
+        {
+            label: "Add Function Signature",
+            name: "addElement",
+            type: "addElement"
+        },
+        {
+            label: "Remove Function Signature",
+            name: "removeElement",
+            type: "removeElement"
+        }
     ];
 
     const handleSubmit = async () => {
@@ -79,7 +108,7 @@ function Integrator() {
         })
         await write({
             args: [
-                inputs.protocolAddress,
+                inputs.externalProtocol,
                 inputs.withdrawAddress,
                 inputs.protocolCategory,
                 signatures,
@@ -100,34 +129,26 @@ function Integrator() {
         }
     };
 
-    return (
-        <Container maxWidth="sm">
-            <h3>IMPORTANT: {exampleProtocolAddr} - mintNFT(address)</h3>
-            <InputForm inputs={inputs} setInputs={setInputs} handleSubmit={handleSubmit} title="Deploy New Integrator" elements={elements} />
-            <Box mt={2} mb={2}>
-                <Grid container justify="center" spacing={2}>
-                    <Grid item>
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={handleAddFuncSig}
-                        >
-                            Add Function Signature
-                        </Button>
-                    </Grid>
-                    <Grid item>
-                        <Button
-                            variant="contained"
-                            color="secondary"
-                            onClick={handleRemoveLastFuncSig}
-                        >
-                            Remove Last Function Signature
-                        </Button>
-                    </Grid>
+    let txDisplay = null
+    if (isPendingTx) {
+        txDisplay = <Typography color="primary">Transaction pending...</Typography>
+    }
+    if (deployedAddr) {
+        txDisplay = <Typography color="primary">New Integrator for {inputs.protocolName} deployed at: <a style={{ color: "white" }} href={"https://explorer.goerli.linea.build/address/" + deployedAddr}>{deployedAddr}</a></Typography>
+    }
+
+    return (<>
+        <Header />
+        <ThemeProvider theme={darkTheme}>
+            <Container maxWidth="sm">
+                <InputForm inputs={inputs} setInputs={setInputs} handleSubmit={handleSubmit} title="Deploy New Integrator" elements={elements} addElement={handleAddFuncSig} removeElement={handleRemoveLastFuncSig} />
+                <Grid item xs={12} md={8} className={classes.txContainer}>
+
+                    {txDisplay}
                 </Grid>
-            </Box>
-        </Container>
-    );
+            </Container>
+        </ThemeProvider>
+    </>);
 }
 
 export default Integrator;

@@ -9,9 +9,10 @@ const useStyles = makeStyles({
     },
 });
 
-const InputForm = ({ inputs, setInputs, handleSubmit, title, elements }: any) => {
+const InputForm = ({ inputs, setInputs, handleSubmit, title, elements, addElement, removeElement }: any) => {
 
     const classes = useStyles();
+
 
     const handleChange = (event: any) => {
         setInputs({
@@ -21,12 +22,33 @@ const InputForm = ({ inputs, setInputs, handleSubmit, title, elements }: any) =>
     };
 
     return (
-        <Container maxWidth="sm">
-            <Typography variant="h6" color="primary">
+        <Container maxWidth="md">
+            <Typography variant="h3" color="primary">
                 {title}
             </Typography>
             {elements.map((element: any) => {
-                if (element.type !== "select") {
+                if (element.type === "addElement") {
+                    return (<Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={addElement}
+                        style={{ width: "100%", margin: "6px 0" }}
+
+                    >
+                        {element.label}
+                    </Button>)
+
+                } else if (element.type === "removeElement") {
+                    return (<Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={removeElement}
+                        style={{ width: "100%", margin: "6px 0" }}
+
+                    >
+                        {element.label}
+                    </Button>)
+                } else if (element.type !== "select") {
                     return (
                         <TextField
                             key={element.name}
@@ -67,6 +89,7 @@ const InputForm = ({ inputs, setInputs, handleSubmit, title, elements }: any) =>
                 variant="contained"
                 color="primary"
                 onClick={handleSubmit}
+                style={{ marginTop: "6px" }}
             >
                 Submit
             </Button>

@@ -5,7 +5,7 @@ import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import Container from '@material-ui/core/Container';
 import Typography from '@material-ui/core/Typography';
-import { makeStyles } from '@material-ui/core/styles';
+import { ThemeProvider, makeStyles } from '@material-ui/core/styles';
 import CampaignABI from "../../../ABIs/Campaign.json"
 
 
@@ -13,8 +13,10 @@ import { type Address, useContractRead, useContractWrite, useWaitForTransaction,
 import { stringToHex } from "viem";
 import { useRouter } from 'next/navigation'
 import { useNetwork, useBalance } from 'wagmi'
-import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@material-ui/core";
+import { Box, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@material-ui/core";
 import CampaignListItem from "../../../components/CampaignListItem";
+import { darkTheme } from "../../../config/theme";
+import Header from "../../../components/Header";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -22,11 +24,32 @@ const useStyles = makeStyles((theme) => ({
             margin: theme.spacing(1),
         },
     },
+    table: {
+        marginBottom: theme.spacing(2),
+    },
+    button: {
+        marginTop: theme.spacing(2),
+        height: '56px', // Height same as TextField
+        width: '150px', // Standard width for buttons
+    },
+    input: {
+        height: '56px', // Height same as Button
+    },
 }));
+
 
 function CampaignPage({ params }: any) {
     const router = useRouter()
     const currentAddress = window.ethereum.selectedAddress;
+
+
+    const { isConnected } = useAccount()
+
+    useEffect(() => {
+        if (!isConnected) {
+            window?.ethereum?.enable()
+        }
+    }, [])
 
 
     const classes = useStyles();
@@ -39,7 +62,7 @@ function CampaignPage({ params }: any) {
         abi: CampaignABI,
         address: params.address,
         functionName: 'withdrawSpend',
-        chainId: 11155111
+        chainId: Number(process.env.CHAIN_ID || 1)
     })
 
     const { data: receiptTxWithdraw, isLoading: isPendingTxWithdraw, isSuccess: isSuccessTxWithdraw } = useWaitForTransaction({ hash: dataWithdraw?.hash })
@@ -61,7 +84,7 @@ function CampaignPage({ params }: any) {
         abi: CampaignABI,
         address: params.address,
         functionName: 'depositSpend',
-        chainId: 11155111
+        chainId: Number(process.env.CHAIN_ID || 1)
     })
 
     const { data: receiptTxDeposit, isSuccess: isSuccessTxDeposit } = useWaitForTransaction({ hash: dataDeposit?.hash })
@@ -78,51 +101,76 @@ function CampaignPage({ params }: any) {
         }
     }, [receiptTxDeposit, isSuccessTxDeposit])
 
-    return (
-        <Container>
-            <Typography variant="h3">Campaign {params.address}</Typography>
-            <div className={classes.root}>
-                <div>
-                    <TableContainer component={Paper}>
-                        <Table>
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell>Campaign Address</TableCell>
-                                    <TableCell></TableCell>
-                                    <TableCell>Campaign Title</TableCell>
-                                    <TableCell>Base Ad Spend</TableCell>
-                                    <TableCell>Remaining Ad Spend</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                <CampaignListItem address={params.address} category={""} />
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                    <TextField
-                        id="outlined-basic"
-                        label="Deposit"
-                        variant="outlined"
-                        type="number"
-                        value={depositAmount}
-                        onChange={e => setDepositAmount(e.target.value)}
-                    />
-                    <Button variant="contained" color="primary" onClick={handleDeposit}>Make Deposit</Button>
-                </div>
-                <div>
-                    <TextField
-                        id="outlined-basic"
-                        label="Withdraw"
-                        variant="outlined"
-                        type="number"
-                        value={withdrawAmount}
-                        onChange={e => setWithdrawAmount(e.target.value)}
-                    />
-                    <Button variant="contained" color="primary" onClick={handleWithdraw}>Make Withdraw</Button>
-                </div>
-            </div>
-        </Container>
-    );
+    return (<>
+        <Header />
+        <ThemeProvider theme={darkTheme}>
+            <Container>
+                <Box className={classes.root}>
+                    <Typography variant="h3" color="textPrimary" style={{ margin: "24px 12px" }}>Campaign Management Page</Typography>
+                    <Grid container direction="column" alignItems="stretch" className={classes.root}>
+                        <Grid item xs={12} className={classes.table}>
+                            <TableContainer component={Paper} style={{ width: '100%' }}>
+                                <Table>
+                                    <Table>
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableCell>Campaign Address</TableCell>
+                                                <TableCell></TableCell>
+                                                <TableCell>Campaign Title</TableCell>
+                                                <TableCell>cumulativeAdViews</TableCell>
+                                                <TableCell>cumulativeAdQueued</TableCell>
+                                                <TableCell>Base Ad Spend</TableCell>
+                                                <TableCell>Remaining Ad Spend</TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            <CampaignListItem address={params.address} category={""} />
+                                        </TableBody>
+                                    </Table>
+                                </Table>
+                            </TableContainer>
+                        </Grid>
+                        <Grid item container xs={12} alignItems="flex-end">
+                            <TextField
+                                id="outlined-basic"
+                                label="Deposit Amount"
+                                variant="outlined"
+                                type="number"
+                                value={depositAmount}
+                                onChange={e => setDepositAmount(e.target.value)}
+                            />
+                            <Grid item>
+                                <Button variant="contained" color="primary" onClick={handleDeposit} size="large" className={classes.button}>Deposit</Button>
+                            </Grid>
+                            <Grid item xs={12}>
+                                {isSuccessTxDeposit ? (
+                                    <Typography color="textPrimary">Deposit Successful! Transaction Hash: <a style={{ color: "white" }} href={"https://explorer.goerli.linea.build/tx/" + receiptTxDeposit?.transactionHash}>{receiptTxDeposit?.transactionHash}</a></Typography>
+                                ) : <Typography>No Deposit</Typography>}
+                            </Grid>
+                        </Grid>
+                        <Grid item container xs={12} alignItems="flex-end">
+                            <TextField
+                                id="outlined-basic"
+                                label="Withdraw Amount"
+                                variant="outlined"
+                                type="number"
+                                value={withdrawAmount}
+                                onChange={e => setWithdrawAmount(e.target.value)}
+                            />
+                            <Grid item>
+                                <Button variant="contained" color="primary" onClick={handleWithdraw} size="large" className={classes.button}>Withdraw</Button>
+                            </Grid>
+                            <Grid item xs={12}>
+                                {isSuccessTxWithdraw ? (
+                                    <Typography color="textPrimary">Withdraw Successful! Transaction Hash: <a style={{ color: "white" }} href={"https://explorer.goerli.linea.build/tx/" + receiptTxWithdraw?.transactionHash}>{receiptTxWithdraw?.transactionHash}</a></Typography>
+                                ) : <Typography>No Withdraw</Typography>}
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                </Box>
+            </Container>
+        </ThemeProvider>
+    </>);
 }
 
 export default CampaignPage;

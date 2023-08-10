@@ -167,7 +167,7 @@
                 "type": "address"
             }
         ],
-        "name": "mintNFT",
+        "name": "MintNFT",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"

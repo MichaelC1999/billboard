@@ -2,8 +2,8 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 
-import { type Address, useContractRead, useContractWrite, useWaitForTransaction, useAccount, useConnect } from 'wagmi'
-import { decodeFunctionResult, encodeFunctionData, stringToHex, toBytes } from "viem";
+import { type Address, useContractRead, useContractWrite, useWaitForTransaction, useAccount, useConnect, erc20ABI } from 'wagmi'
+import { BaseError, decodeEventLog, decodeFunctionResult, encodeFunctionData, stringToHex, toBytes, zeroAddress } from "viem";
 import { useRouter } from 'next/navigation'
 import { useNetwork, useBalance } from 'wagmi'
 import InputForm from "../../../components/InputForm";
@@ -12,17 +12,46 @@ import ProtocolTokenABI from "../../../ABIs/ProtocolToken.json"
 
 import MintProtocolToken from "../../../components/MintProtocolToken";
 import { TokenApprove } from "../../../components/TokenApprove";
+import { darkTheme } from "../../../config/theme";
+import { Box, Button, CircularProgress, Grid, ThemeProvider, Typography, makeStyles } from "@material-ui/core";
+import Header from "../../../components/Header";
+
+const useStyles = makeStyles((theme) => ({
+    formContainer: {
+        marginTop: theme.spacing(3),
+    },
+    tokenContainer: {
+        marginTop: theme.spacing(3),
+        marginBottom: theme.spacing(3),
+        textAlign: "center"
+    },
+}));
 
 function CreateCampaign() {
-    const router = useRouter()
-    const { chain, chains } = useNetwork()
-    const { connector: activeConnector, isConnected, address: userAddress } = useAccount()
-    const { connect, connectors, error, pendingConnector } = useConnect()
+    const classes = useStyles();
+    const { isConnected } = useAccount()
+    useEffect(() => {
+        if (!isConnected) {
+            window?.ethereum?.enable()
+        }
+    }, [])
 
     const factoryAddress = process.env.factoryAddress;
     const currentAccount = window.ethereum.selectedAddress;
 
     const [allowance, setAllowance] = useState<Number>(0);
+
+    const { data: treasuryAddrOnChain } = useContractRead({
+        abi: FactoryABI,
+        address: factoryAddress,
+        functionName: 'treasuryAddress',
+        args: [],
+        enabled: true,
+    })
+
+    useEffect(() => {
+        console.log(treasuryAddrOnChain, "TESOURO", process.env.treasuryAddress)
+    }, [treasuryAddrOnChain])
 
     useEffect(() => {
         getAllowance()
@@ -61,28 +90,31 @@ function CreateCampaign() {
         abi: FactoryABI,
         address: factoryAddress,
         functionName: 'deployNewCampaign',
-        chainId: 11155111
+        chainId: Number(process.env.CHAIN_ID || 1)
     })
-    // deployNewCampaign(string memory category, string memory protocolName, uint initialAdSpend, string memory campaignTitleParam, string memory campaignContentParam, uint deadline, uint8 v, bytes32 r, bytes32 s)
 
-    const { data: receiptTx, isLoading: isPendingTx, isSuccess: isSuccessTx } = useWaitForTransaction({ hash: data?.hash })
+    const { data: receiptTx, isLoading: isPendingTx, isSuccess: isSuccessTx, isError: isErrorTx } = useWaitForTransaction({ hash: data?.hash })
 
     useEffect(() => {
+        console.log('IN THE SUCCESS EFFECT')
         if (receiptTx) {
             console.log(receiptTx.logs, data, 'GET THE TOPICS')
-            // const topics = decodeEventLog({
-            //     abi: FactoryABI,
-            //     data: receiptTx.logs[0].data,
-            //     topics: receiptTx.logs[0].topics
-            // })
+            const topics = decodeEventLog({
+                abi: FactoryABI,
+                data: receiptTx.logs[2].data,
+                topics: receiptTx.logs[2].topics
+            })
+            setDeployedAddr(topics.args._address)
+            const txHash = data?.hash
         }
         if (isSuccessTx && !isPendingTx) {
             setExecuteApproval(false)
-            router.push('/campaign/')
+
         }
     }, [isSuccessTx])
 
     const [inputs, setInputs] = useState<any>({});
+    const [deployedAddr, setDeployedAddr] = useState<string>("")
 
     const handleSubmit = async () => {
         setExecuteApproval(false)
@@ -93,7 +125,8 @@ function CreateCampaign() {
                 inputs.protocolName,
                 inputs.initialCampaignSpend * (10 ** 18),
                 inputs.campaignTitle,
-                inputs.campaignContent
+                inputs.campaignContent,
+                zeroAddress
             ],
         })
     };
@@ -146,18 +179,43 @@ function CreateCampaign() {
         }
     }
 
+    let txDisplay = <Typography>No Transaction</Typography>
+    if (isPendingTx) {
+        txDisplay = <Typography color="primary">Transaction pending...</Typography>
+    }
+    if (deployedAddr) {
+        txDisplay = <Typography color="primary">New Campaign Contract at: <a style={{ color: "white" }} href={"https://explorer.goerli.linea.build/address/" + deployedAddr}>{deployedAddr}</a></Typography>
+    }
+
     return (<>
-        <div className="createCampaign">
-            <div style={{ width: "100%" }}>
-                <InputForm inputs={inputs} setInputs={setInputs} handleSubmit={() => {
-                    setExecuteApproval(true)
-                }} title="Create New Campaign" elements={elements} />
-            </div>
-            <MintProtocolToken />
-            {approvalRender}
-        </div>
-    </>
-    );
+        <Header />
+        <ThemeProvider theme={darkTheme}>
+            <Box className="createCampaign">
+                <Grid container direction="column" alignItems="center">
+                    <Grid item xs={12} md={8} className={classes.formContainer}>
+                        <InputForm
+                            inputs={inputs}
+                            setInputs={setInputs}
+                            title="Create New Campaign"
+                            elements={elements}
+                            addElement={() => null}
+                            removeElement={() => null}
+                            handleSubmit={() => {
+                                setExecuteApproval(true)
+                            }} />
+                    </Grid>
+
+                    <Grid item xs={12} md={8} className={classes.tokenContainer}>
+                        {txDisplay}
+                        <MintProtocolToken />
+                    </Grid>
+                    <Grid item xs={12} md={8}>
+                        {approvalRender}
+                    </Grid>
+                </Grid>
+            </Box>
+        </ThemeProvider>
+    </>);
 }
 
 export default CreateCampaign;

@@ -48,12 +48,18 @@ const CampaignListItem = ({ address, category }: any) => {
                     accessList: []
                 }, null]
             })
+            if (valueName === "cumulativeAdViews" || valueName == "cumulativeAdQueued") {
+                console.log(valueName, encodedTxData, dataToDecode)
+            }
             if (dataToDecode?.length > 0) {
                 const decode = decodeFunctionResult({
                     abi: CampaignABI,
                     functionName: valueName,
                     data: dataToDecode
                 })
+                if (valueName === "cumulativeAdViews" || valueName == "cumulativeAdQueued") {
+                    console.log(valueName, decode)
+                }
                 setCampaignData((prevState) => ({ ...prevState, [valueName]: decode }))
             }
         } catch (err) {
@@ -86,7 +92,7 @@ const CampaignListItem = ({ address, category }: any) => {
                 <TableCell>
                     <Typography
                         variant="body1"
-                        style={{ cursor: 'pointer', color: 'blue', textDecoration: 'underline' }}
+                        style={{ cursor: 'pointer', textDecoration: 'underline' }}
                         onClick={() => router.push(`/campaign/${address}`)}
                     >
                         {address}
@@ -94,8 +100,8 @@ const CampaignListItem = ({ address, category }: any) => {
                 </TableCell>
                 <TableCell>{category}</TableCell>
                 <TableCell>{campaignData?.campaignTitle}</TableCell>
-                <TableCell>{campaignData?.cumulativeAdViews}</TableCell>
-                <TableCell>{campaignData?.cumulativeAdQueued}</TableCell>
+                <TableCell>{campaignData?.cumulativeAdViews?.toString()}</TableCell>
+                <TableCell>{campaignData?.cumulativeAdQueued?.toString()}</TableCell>
                 <TableCell>{formatTokenDecimals(campaignData?.baseAdSpend)} BILL</TableCell>
                 <TableCell>{formatTokenDecimals(campaignData?.remainingAvailableAdSpend)} BILL</TableCell>
             </TableRow>

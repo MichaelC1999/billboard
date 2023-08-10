@@ -13,7 +13,7 @@ export function TokenApprove({ tokenAddress, balance, addressToApprove, approval
         abi: ERC20ABI,
         address: tokenAddress,
         functionName: 'approve',
-        chainId: 11155111
+        chainId: Number(process.env.CHAIN_ID || 1)
     })
 
     const {
