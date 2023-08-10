@@ -21,7 +21,7 @@ This term describes a protocol that earns ad revenue by routing their contract i
 
 Here is a flowchart showing the main contracts and how they relate to each other
 
-![](./next-app/src/img/contractsFlowchart.png) 
+![](./UI/next-app/src/img/contractsFlowchart.png) 
 
 ### Factory Contract
 
@@ -37,7 +37,7 @@ The revenue earned per ad view is currently hardcoded. One of the upcoming tasks
 
 Below is a flowchart demonstrating how a Campaign is launched and how it gets assigned to users
 
-![](./next-app/src/img/campaignFlowchart.png)
+![](./UI/next-app/src/img/campaignFlowchart.png)
 
 #### I want to start an advertising campaign. How does this work?
 
@@ -51,7 +51,7 @@ After performing verifications, the Integrator registers the ad view and then ex
 
 After registering ad views, the revenue is held in the Treasury contract and can be withdrawn by accounts approved by the Integrator deployer.
 
-![](./next-app/src/img/integratorFlowchart.png) 
+![](./UI/next-app/src/img/integratorFlowchart.png) 
 
 #### I want my dApp to earn ad revenue. How does this work?
 
