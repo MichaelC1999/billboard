@@ -36,7 +36,7 @@ function CreateCampaign() {
         }
     }, [])
 
-    const factoryAddress = process.env.factoryAddress;
+    const factoryAddress: any = process.env.factoryAddress;
     const currentAccount = window.ethereum.selectedAddress;
 
     const [allowance, setAllowance] = useState<Number>(0);
@@ -104,7 +104,8 @@ function CreateCampaign() {
                 data: receiptTx.logs[2].data,
                 topics: receiptTx.logs[2].topics
             })
-            setDeployedAddr(topics.args._address)
+            const args: any = topics.args
+            setDeployedAddr(args._address)
             const txHash = data?.hash
         }
         if (isSuccessTx && !isPendingTx) {

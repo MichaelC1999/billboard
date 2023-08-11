@@ -6,13 +6,12 @@ import { connectSnap, getSnap } from '../utils'
 import { MetaMaskContext } from '../hooks'
 import { defaultSnapOrigin } from '../config'
 
-export function Page() {
+const HomePage = () => {
 
   useEffect(() => {
     const provider: any = window;
     const providerEth = provider.ethereum;
     isFlask(providerEth)
-
   }, [])
 
   const installBillboardSnap = async () => {
@@ -38,9 +37,8 @@ export function Page() {
   };
 
   return (
-    <>
-    </>
+    <h2>Home</h2>
   )
 }
 
-export default Page
+export default HomePage

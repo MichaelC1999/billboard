@@ -48,7 +48,7 @@ const CampaignList = () => {
                     functionName: 'getCampaignAddresses',
                     data: dataToDecode
                 })
-                setCampaigns((prevState) => {
+                setCampaigns((prevState: any) => {
                     return { ...prevState, [category]: decode }
                 })
             }

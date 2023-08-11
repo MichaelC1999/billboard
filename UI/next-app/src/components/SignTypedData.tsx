@@ -6,7 +6,7 @@ import { type Address, useSignTypedData } from 'wagmi'
 
 
 export function SignTypedData({ }: any) {
-  const domain = {
+  const domain: any = {
     name: 'Integrator',
     version: '1',
     chainId: Number(process.env.CHAIN_ID || 1),

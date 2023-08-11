@@ -21,11 +21,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function Integrator() {
-    const router = useRouter()
     const classes = useStyles();
 
-    const exampleProtocolAddr = process.env.exampleProtocol
-    const factoryAddress = process.env.factoryAddress;
+    const factoryAddress: any = process.env.factoryAddress;
 
     const { isConnected } = useAccount()
 
@@ -53,9 +51,10 @@ function Integrator() {
                 data: receiptTx.logs[0].data,
                 topics: receiptTx.logs[0].topics
             })
-            console.log(topics.args._address, "TOPICS DECODED - GET INT ADDR")
-            if (topics.args._address) {
-                setDeployedAddr(topics.args._address)
+            const args: any = topics.args
+            console.log(args._address, "TOPICS DECODED - GET INT ADDR")
+            if (args._address) {
+                setDeployedAddr(args._address)
             }
         }
 

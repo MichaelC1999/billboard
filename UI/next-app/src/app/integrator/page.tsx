@@ -5,8 +5,7 @@ import { Button, Container, Typography, Table, TableBody, TableCell, TableContai
 import { Link } from "react-router-dom";
 import { useRouter } from 'next/navigation'
 import IntegratorListItem from "../../components/IntegratorListItem";
-import { useAccount, useContractRead, useContractReads } from "wagmi";
-import { wagmiContractConfig } from "../../components/contracts";
+import { useAccount } from "wagmi";
 import FactoryABI from "../../ABIs/Factory.json"
 import { decodeFunctionResult, stringToHex, toBytes, zeroAddress } from "viem";
 import { encodeFunctionData } from 'viem'

@@ -25,7 +25,7 @@ const MintNFT = () => {
     const [signature, setSignature] = useState<string>("");
 
     const integratorAddress = "0x2852d405eD7d122737f870AcF26762d310A408B5"
-    const currentAccount = window.ethereum.selectedAddress;
+    const currentAccount: any = window.ethereum.selectedAddress;
 
     const { isConnected } = useAccount()
 
@@ -77,7 +77,6 @@ const MintNFT = () => {
             console.log('SIGNATURE:', signature)
             const functionSignature = keccak256(toHex("MintNFT(address)")).slice(0, 10)
             write({
-                from: currentAccount,
                 args: [
                     signature, functionSignature, "0x000000000000000000000000" + currentAccount?.slice(2, 42)
                 ]
