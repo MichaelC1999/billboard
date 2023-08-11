@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { Button, Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, ThemeProvider } from "@material-ui/core";
-import { Link } from "react-router-dom";
 import { useRouter } from 'next/navigation'
 import CampaignListItem from "../../components/CampaignListItem";
 import { useAccount, useContractRead, useContractReads } from "wagmi";
