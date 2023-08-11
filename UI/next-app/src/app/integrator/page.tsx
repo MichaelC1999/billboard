@@ -10,6 +10,7 @@ import { decodeFunctionResult, stringToHex, toBytes, zeroAddress } from "viem";
 import { encodeFunctionData } from 'viem'
 import { darkTheme } from "../../config/theme";
 import Header from "../../components/Header";
+import IntegratorPage from "../../components/IntegratorPage";
 
 const useStyles = makeStyles((theme) => ({
     table: {
@@ -36,6 +37,7 @@ const IntegratorList = () => {
 
     const integratorFactoryAddress = process.env.factoryAddress;
     const [integrators, setIntegrators] = useState<{ [x: string]: string[] }>({});
+    const [selectedIntegrator, setSelectedIntegrator] = useState<string>("")
 
     const { isConnected } = useAccount()
 
@@ -83,6 +85,10 @@ const IntegratorList = () => {
         getIntegrators('other')
     }, [])
 
+    if (selectedIntegrator) {
+        return <IntegratorPage integratorAddress={selectedIntegrator} closeIntegrator={() => setSelectedIntegrator("")} />
+    }
+
     let integratorList = null
     let totalListlength = 0
     Object.keys(integrators).forEach((cat: string) => {
@@ -94,7 +100,7 @@ const IntegratorList = () => {
                 <>
                     {integrators[category].map((integratorAddress: string) => {
                         return (
-                            <IntegratorListItem key={integratorAddress} category={category} address={integratorAddress} />
+                            <IntegratorListItem key={integratorAddress} category={category} address={integratorAddress} selectIntegrator={(x: string) => setSelectedIntegrator(x)} />
                         )
                     })}
                 </>

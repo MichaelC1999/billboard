@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { decodeFunctionResult, encodeFunctionData } from "viem";
 import IntegratorABI from '../ABIs/Integrator.json';
 
-const IntegratorListItem = ({ address, category }: any) => {
+const IntegratorListItem = ({ address, category, selectIntegrator }: any) => {
     const router = useRouter()
     const [integratorData, setIntegratorData] = useState<{ [x: string]: any } | null>(null);
     const currentAccount = window.ethereum.selectedAddress;
@@ -78,7 +78,7 @@ const IntegratorListItem = ({ address, category }: any) => {
                 <Typography
                     variant="body1"
                     style={{ cursor: 'pointer', textDecoration: 'underline' }}
-                    onClick={() => router.push(`/integrator/${address}`)}
+                    onClick={() => selectIntegrator(address)}
                 >
                     {address}
                 </Typography>
@@ -86,7 +86,7 @@ const IntegratorListItem = ({ address, category }: any) => {
             <TableCell>{category}</TableCell>
             <TableCell>{integratorData?.protocol}</TableCell>
             <TableCell>{integratorData?.getFunctionSignatures?.join(", ")}</TableCell>
-            <TableCell>{integratorData?.servedAdCounter.toString()}</TableCell>
+            <TableCell>{integratorData?.servedAdCounter?.toString()}</TableCell>
             <TableCell>{formatTokenDecimals(integratorData?.currentAvailableAdRevenue)} BILL</TableCell>
             <TableCell>{formatTokenDecimals(integratorData?.cumulativeAdRevenue)} BILL</TableCell>
         </TableRow>

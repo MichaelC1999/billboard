@@ -11,11 +11,11 @@ import { type Address, useContractRead, useContractWrite, useWaitForTransaction,
 import { stringToHex } from "viem";
 import { useRouter } from 'next/navigation'
 import { useNetwork, useBalance } from 'wagmi'
-import IntegratorABI from "../../../ABIs/Integrator.json"
-import IntegratorListItem from "../../../components/IntegratorListItem";
+import IntegratorABI from "../ABIs/Integrator.json"
+import IntegratorListItem from "./IntegratorListItem";
 import { Box, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@material-ui/core";
-import { darkTheme } from "../../../config/theme";
-import Header from "../../../components/Header";
+import { darkTheme } from "../config/theme";
+import Header from "./Header";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -38,12 +38,8 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-function IntegratorPage({ params }: any) {
-    const router = useRouter()
-
-
+function IntegratorPage({ integratorAddress, closeIntegrator }: any) {
     const { isConnected } = useAccount()
-
     useEffect(() => {
         if (!isConnected) {
             window?.ethereum?.enable()
@@ -55,7 +51,7 @@ function IntegratorPage({ params }: any) {
 
     const { write, data, isSuccess } = useContractWrite({
         abi: IntegratorABI,
-        address: params.address,
+        address: integratorAddress,
         functionName: 'integratorWithdraw',
         chainId: Number(process.env.CHAIN_ID || 1)
     })
@@ -79,6 +75,7 @@ function IntegratorPage({ params }: any) {
         <ThemeProvider theme={darkTheme}>
             <Container>
                 <Box className={classes.root}>
+                    <Button color="secondary" style={{ marginTop: "12px", minWidth: "100px", textAlign: "center", backgroundColor: "white" }} onClick={closeIntegrator}>BACK</Button>
                     <Typography variant="h3" style={{ margin: "16px 0" }} color="textPrimary">Integrator Management Page</Typography>
                     <Grid container direction="column" alignItems="center" className={classes.root}>
                         <Grid item xs={12} className={classes.table}>
@@ -96,7 +93,7 @@ function IntegratorPage({ params }: any) {
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        <IntegratorListItem address={params.address} category={""} />
+                                        <IntegratorListItem address={integratorAddress} category={""} />
                                     </TableBody>
                                 </Table>
                             </TableContainer>

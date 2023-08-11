@@ -12,7 +12,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-const CampaignListItem = ({ address, category }: any) => {
+const CampaignListItem = ({ address, category, selectCampaign }: any) => {
     const router = useRouter()
     const classes = useStyles();
 
@@ -93,7 +93,7 @@ const CampaignListItem = ({ address, category }: any) => {
                     <Typography
                         variant="body1"
                         style={{ cursor: 'pointer', textDecoration: 'underline' }}
-                        onClick={() => router.push(`/campaign/${address}`)}
+                        onClick={() => selectCampaign(address)}
                     >
                         {address}
                     </Typography>

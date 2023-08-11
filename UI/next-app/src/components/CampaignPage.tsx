@@ -6,7 +6,7 @@ import TextField from '@material-ui/core/TextField';
 import Container from '@material-ui/core/Container';
 import Typography from '@material-ui/core/Typography';
 import { ThemeProvider, makeStyles } from '@material-ui/core/styles';
-import CampaignABI from "../../../ABIs/Campaign.json"
+import CampaignABI from "../ABIs/Campaign.json"
 
 
 import { type Address, useContractRead, useContractWrite, useWaitForTransaction, useAccount, useConnect } from 'wagmi'
@@ -14,9 +14,9 @@ import { stringToHex } from "viem";
 import { useRouter } from 'next/navigation'
 import { useNetwork, useBalance } from 'wagmi'
 import { Box, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@material-ui/core";
-import CampaignListItem from "../../../components/CampaignListItem";
-import { darkTheme } from "../../../config/theme";
-import Header from "../../../components/Header";
+import CampaignListItem from "./CampaignListItem";
+import { darkTheme } from "../config/theme";
+import Header from "./Header";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -38,7 +38,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-function CampaignPage({ params }: any) {
+function CampaignPage({ campaignAddress, closeCampaign }: any) {
     const router = useRouter()
     const currentAddress = window.ethereum.selectedAddress;
 
@@ -60,7 +60,7 @@ function CampaignPage({ params }: any) {
 
     const { write: withdraw, data: dataWithdraw, } = useContractWrite({
         abi: CampaignABI,
-        address: params.address,
+        address: campaignAddress,
         functionName: 'withdrawSpend',
         chainId: Number(process.env.CHAIN_ID || 1)
     })
@@ -82,7 +82,7 @@ function CampaignPage({ params }: any) {
 
     const { write: deposit, data: dataDeposit } = useContractWrite({
         abi: CampaignABI,
-        address: params.address,
+        address: campaignAddress,
         functionName: 'depositSpend',
         chainId: Number(process.env.CHAIN_ID || 1)
     })
@@ -106,7 +106,7 @@ function CampaignPage({ params }: any) {
         <ThemeProvider theme={darkTheme}>
             <Container>
                 <Box className={classes.root}>
-                    <Typography variant="h3" color="textPrimary" style={{ margin: "24px 12px" }}>Campaign Management Page</Typography>
+                    <Button color="secondary" style={{ marginTop: "12px", minWidth: "100px", textAlign: "center", backgroundColor: "white" }} onClick={closeCampaign}>BACK</Button>                    <Typography variant="h3" color="textPrimary" style={{ margin: "24px 12px" }}>Campaign Management Page</Typography>
                     <Grid container direction="column" alignItems="stretch" className={classes.root}>
                         <Grid item xs={12} className={classes.table}>
                             <TableContainer component={Paper} style={{ width: '100%' }}>
@@ -124,7 +124,7 @@ function CampaignPage({ params }: any) {
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
-                                            <CampaignListItem address={params.address} category={""} />
+                                            <CampaignListItem address={campaignAddress} category={""} />
                                         </TableBody>
                                     </Table>
                                 </Table>

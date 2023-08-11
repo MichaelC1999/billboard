@@ -10,6 +10,7 @@ import { decodeFunctionResult, stringToHex, toBytes, zeroAddress } from "viem";
 import { encodeFunctionData } from 'viem'
 import { darkTheme } from "../../config/theme";
 import Header from "../../components/Header";
+import CampaignPage from "../../components/CampaignPage";
 
 
 const CampaignList = () => {
@@ -17,6 +18,7 @@ const CampaignList = () => {
     const currentAccount = window.ethereum.selectedAddress;
     const factoryAddress = process.env.factoryAddress;
     const [campaigns, setCampaigns] = useState<{ [x: string]: string[] }>({});
+    const [selectedCampaign, setSelectedCampaign] = useState<string>("")
     const { isConnected } = useAccount()
 
     useEffect(() => {
@@ -63,6 +65,10 @@ const CampaignList = () => {
         getCampaigns('other')
     }, [])
 
+    if (selectedCampaign) {
+        return <CampaignPage campaignAddress={selectedCampaign} closeCampaign={() => setSelectedCampaign("")} />
+    }
+
     let campaignList = null
     let totalListlength = 0
     Object.keys(campaigns).forEach((cat: string) => {
@@ -74,7 +80,7 @@ const CampaignList = () => {
                 <>
                     {campaigns[category].map((campaignAddress: string) => {
                         return (
-                            <CampaignListItem key={campaignAddress} category={category} address={campaignAddress} />
+                            <CampaignListItem key={campaignAddress} category={category} address={campaignAddress} selectCampaign={(x: string) => setSelectedCampaign(x)} />
                         )
                     })}
                 </>
