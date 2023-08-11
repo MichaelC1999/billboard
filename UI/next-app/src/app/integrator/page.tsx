@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from "react";
 import { Button, Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, makeStyles, ThemeProvider, createMuiTheme, Box } from "@material-ui/core";
-import { Link } from "react-router-dom";
 import { useRouter } from 'next/navigation'
 import IntegratorListItem from "../../components/IntegratorListItem";
 import { useAccount } from "wagmi";
