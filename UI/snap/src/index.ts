@@ -22,14 +22,10 @@ export const onRpcRequest: OnRpcRequestHandler = async ({ origin, request }) => 
       accessList: []
     }, null]
   })
-  console.log(currentAdForUserInBytes, "CURRENT CAMPIGN ADDR")
   const currentAdForUser = "0x" + currentAdForUserInBytes.slice(26, 66)
-
   const isValid = true
-
   let returnVal: any = []
   let dialogType: any = "alert"
-
   const contentFunctionSignature = "0xdfff0b20"
   // fetch the ad campaign content
   const campaignContent = await win.ethereum.request({

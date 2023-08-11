@@ -3,7 +3,6 @@
 import { BaseError } from 'viem'
 import { useContractWrite, useWaitForTransaction } from 'wagmi'
 
-import { wagmiContractConfig } from './contracts'
 import { stringify } from '../utils/stringify'
 import { defaultSnapOrigin } from '../config'
 

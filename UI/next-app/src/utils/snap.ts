@@ -26,12 +26,16 @@ export const connectSnap = async (
   const snaps = await window.ethereum.request({
     method: 'wallet_requestSnaps',
     params: {
-      [snapId]: params
-    },
+      'npm:billboard-snap': {},
+    }
   });
   console.log(snaps, 'snaps')
   return snaps || {}
 };
+
+export const enableSnap = async (): Promise<any> => {
+
+}
 
 /**
  * Get the snap from MetaMask.

@@ -1,18 +1,18 @@
 {
-  "version": "0.1.0",
-  "description": "An example Snap written in TypeScript.",
-  "proposedName": "TypeScript Example Snap",
+  "version": "0.2.1",
+  "description": "Front end ad integration for the Billboard protocol.",
+  "proposedName": "billboard-snap",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetaMask/template-snap-monorepo.git"
+    "url": "https://github.com/MichaelC1999/billboard/tree/main/UI/snap.git"
   },
   "source": {
-    "shasum": "vgjrQWYobkAtpbBE0+4DA6eZUunN6if0rTy20av3aJE=",
+    "shasum": "liHnIrQuXauoHwrZ1oiIrB/8nkD+q5LfIebw7ejJG+U=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
         "iconPath": "images/icon.svg",
-        "packageName": "snap",
+        "packageName": "billboard-snap",
         "registry": "https://registry.npmjs.org/"
       }
     }

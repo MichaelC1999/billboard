@@ -47,7 +47,7 @@ contract Factory {
     /// @dev This default campaign is what is always displayed to a user at nonce 0 for a given integrator
     /// @dev This campaign explains that the protocol uses Billboard
     function deployDefaultCampaign() internal {
-        Campaign campaignDeployed = new Campaign(address(this), treasuryAddress, "fallback", "Billboard", 0, "fallbackAddress", "THIS PROTOCOL USES BILLBOARD PROTOCOL. ALL TRANSACTIONS WITH THIS PROTOCOL GET ROUTED THROUGH AN INTEGRATOR CONTRACT. YOU WILL BE SERVED ADVERTISEMENTS BEFORE EACH INTERACTION WITH THIS PROTOCOL.");
+        Campaign campaignDeployed = new Campaign(address(this), treasuryAddress, "fallback", "Billboard", 0, "fallbackAddress", "THIS PROTOCOL USES BILLBOARD PROTOCOL. ALL TRANSACTIONS WITH THIS PROTOCOL GET ROUTED THROUGH AN INTEGRATOR CONTRACT. EVERY APPLICABLE INTERACTION WITH THIS PROTOCOL WILL SERVE ADVERTISEMENTS IN METAMASK. BY AUTHORIZING THIS INTERACTION YOU AGREE TO BE SHOWN ADS.");
         address newCampaignAddress = address(campaignDeployed);
         fallbackAddress = newCampaignAddress;
         campaignOpen[newCampaignAddress] = true;

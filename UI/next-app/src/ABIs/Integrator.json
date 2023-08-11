@@ -21,63 +21,6 @@
         "type": "constructor"
     },
     {
-        "inputs": [
-            {
-                "internalType": "bytes",
-                "name": "signature",
-                "type": "bytes"
-            }
-        ],
-        "name": "addressCheck",
-        "outputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "bytes",
-                "name": "signature",
-                "type": "bytes"
-            }
-        ],
-        "name": "addressCheck2",
-        "outputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "bytes",
-                "name": "signature",
-                "type": "bytes"
-            }
-        ],
-        "name": "addressCheck3",
-        "outputs": [
-            {
-                "internalType": "address",
-                "name": "",
-                "type": "address"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
         "inputs": [],
         "name": "cumulativeAdRevenue",
         "outputs": [
@@ -100,19 +43,6 @@
                 "type": "uint256"
             }
         ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "bytes32",
-                "name": "hashedMessageUnsigned",
-                "type": "bytes32"
-            }
-        ],
-        "name": "dataCheck",
-        "outputs": [],
         "stateMutability": "view",
         "type": "function"
     },
@@ -143,13 +73,6 @@
         "type": "function"
     },
     {
-        "inputs": [],
-        "name": "initiateWithdrawProfit",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
         "inputs": [
             {
                 "internalType": "uint256",
@@ -159,35 +82,6 @@
         ],
         "name": "integratorWithdraw",
         "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "internalType": "bytes",
-                "name": "signature",
-                "type": "bytes"
-            },
-            {
-                "internalType": "bytes4",
-                "name": "functionSignature",
-                "type": "bytes4"
-            },
-            {
-                "internalType": "bytes",
-                "name": "functionParams",
-                "type": "bytes"
-            }
-        ],
-        "name": "interactionTriggered",
-        "outputs": [
-            {
-                "internalType": "bytes",
-                "name": "",
-                "type": "bytes"
-            }
-        ],
         "stateMutability": "nonpayable",
         "type": "function"
     },
@@ -212,14 +106,25 @@
                 "type": "bytes"
             },
             {
-                "internalType": "bytes32",
-                "name": "dataToBeSigned",
-                "type": "bytes32"
+                "internalType": "bytes4",
+                "name": "functionSignature",
+                "type": "bytes4"
+            },
+            {
+                "internalType": "bytes",
+                "name": "functionParams",
+                "type": "bytes"
             }
         ],
-        "name": "recoverCheck",
-        "outputs": [],
-        "stateMutability": "view",
+        "name": "routeInteraction",
+        "outputs": [
+            {
+                "internalType": "bytes",
+                "name": "",
+                "type": "bytes"
+            }
+        ],
+        "stateMutability": "nonpayable",
         "type": "function"
     },
     {
