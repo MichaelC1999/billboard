@@ -2,7 +2,7 @@
 module.exports = {
   reactStrictMode: false,
   basePath: '/billboard',
-  assetPrefix: '/billboard/',
+  assetPrefix: '.',
   trailingSlash: true,
   output: 'export',
   env: {
