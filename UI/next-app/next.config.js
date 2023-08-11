@@ -3,6 +3,7 @@ module.exports = {
   reactStrictMode: false,
   basePath: '/billboard',
   assetPrefix: '/billboard/',
+  trailingSlash: true,
   output: 'export',
   env: {
     factoryAddress: '0xCe37A881067c0f83b4a439f0157a7e5dE055DB06',
