@@ -4,9 +4,9 @@ import React, { useState, useEffect } from "react";
 import { Button, Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, ThemeProvider } from "@material-ui/core";
 import { useRouter } from 'next/navigation'
 import CampaignListItem from "../../components/CampaignListItem";
-import { useAccount, useContractRead, useContractReads, useNetwork } from "wagmi";
+import { useAccount, useNetwork } from "wagmi";
 import FactoryABI from "../../ABIs/Factory.json"
-import { decodeFunctionResult, stringToHex, toBytes, zeroAddress } from "viem";
+import { decodeFunctionResult } from "viem";
 import { encodeFunctionData } from 'viem'
 import { darkTheme } from "../../config/theme";
 import Header from "../../components/Header";

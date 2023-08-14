@@ -12,6 +12,7 @@ import { darkTheme } from "../../config/theme";
 import Header from "../../components/Header";
 import IntegratorPage from "../../components/IntegratorPage";
 import NetworkManager from "../../components/NetworkManager";
+import { lineaTestnet } from "wagmi/dist/chains";
 
 const useStyles = makeStyles((theme) => ({
     table: {
@@ -80,7 +81,7 @@ const IntegratorList = () => {
             console.log(err)
         }
     }
-    console.log('Integrator', window.ethereum.networkVersion, address, window.ethereum.selectedAddress, process.env.CHAIN_ID)
+    console.log('Integrator', window.ethereum.networkVersion, address, window.ethereum.selectedAddress, process.env.CHAIN_ID, lineaTestnet?.id)
 
     useEffect(() => {
         console.log('Integrator USE effect', window.ethereum.networkVersion, address, window.ethereum.selectedAddress, process.env.CHAIN_ID)
