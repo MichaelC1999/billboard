@@ -12,7 +12,6 @@ import { darkTheme } from "../../config/theme";
 import Header from "../../components/Header";
 import IntegratorPage from "../../components/IntegratorPage";
 import NetworkManager from "../../components/NetworkManager";
-import { chains, config } from "../../wagmi";
 
 const useStyles = makeStyles((theme) => ({
     table: {
@@ -31,13 +30,11 @@ const useStyles = makeStyles((theme) => ({
     }
 }));
 
-
 const IntegratorList = () => {
     const classes = useStyles();
     const router = useRouter();
-    const { chain } = useNetwork();
     const currentAccount = window.ethereum.selectedAddress;
-
+    const [account, setAccount] = useState<string | null>(currentAccount)
     const integratorFactoryAddress = process.env.factoryAddress;
     const [integrators, setIntegrators] = useState<{ [x: string]: string[] }>({});
     const [selectedIntegrator, setSelectedIntegrator] = useState<string>("")
@@ -48,7 +45,9 @@ const IntegratorList = () => {
         if (!isConnected) {
             window?.ethereum?.enable()
         }
+        window.ethereum.on('accountsChanged', (accounts: any) => setAccount(accounts[1]));
     }, [])
+
 
     const getIntegrators = async (category: string) => {
         try {
@@ -80,17 +79,17 @@ const IntegratorList = () => {
             console.log(err)
         }
     }
-    console.log(useNetwork(), chains)
 
     useEffect(() => {
-        console.log("USE EFFECT chain", chain?.id === process.env.CHAIN_ID, chain?.id, process.env.CHAIN_ID, config)
-        if (window.ethereum.networkVersion === process.env.CHAIN_ID) {
+        console.log("check", account)
+        if (window.ethereum.networkVersion == process.env.CHAIN_ID) {
+            console.log('ENTERED?')
             getIntegrators("lend")
             getIntegrators('dex')
             getIntegrators('nft')
             getIntegrators('other')
         }
-    }, [window.ethereum.networkVersion])
+    }, [account])
 
     if (selectedIntegrator) {
         return <IntegratorPage integratorAddress={selectedIntegrator} closeIntegrator={() => setSelectedIntegrator("")} />
