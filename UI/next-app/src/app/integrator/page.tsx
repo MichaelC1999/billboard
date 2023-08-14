@@ -81,6 +81,7 @@ const IntegratorList = () => {
     }
 
     useEffect(() => {
+        console.log("USE EFFECT chain", chain?.id === process.env.CHAIN_ID, chain?.id, process.env.CHAIN_ID)
         if (chain?.id === process.env.CHAIN_ID) {
             getIntegrators("lend")
             getIntegrators('dex')
@@ -122,6 +123,8 @@ const IntegratorList = () => {
                 <TableCell></TableCell>
             </TableRow>
         )
+    } else {
+        // This should display something to tell a user to sign into metamask and then refresh
     }
 
     return (<>
