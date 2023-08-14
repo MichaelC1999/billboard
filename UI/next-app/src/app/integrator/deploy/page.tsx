@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 
 import { type Address, useContractRead, useContractWrite, useWaitForTransaction, useAccount, useConnect } from 'wagmi'
-import { decodeEventLog, stringToHex } from "viem";
+import { decodeEventLog, encodeFunctionData, stringToHex } from "viem";
 import { useRouter } from 'next/navigation'
 import { useNetwork, useBalance } from 'wagmi'
 import InputForm from "../../../components/InputForm";
@@ -34,31 +34,35 @@ function Integrator() {
         window.ethereum.on('accountsChanged', (accounts: any) => setAccount(accounts[0]));
     }, [])
 
-    const { write, data } = useContractWrite({
-        abi: FactoryABI,
-        address: factoryAddress,
-        functionName: 'deployNewIntegrator',
-        chainId: Number(process.env.CHAIN_ID || 1)
-    })
-
-    const { data: receiptTx, isLoading: isPendingTx, isSuccess: isSuccessTx } = useWaitForTransaction({ hash: data?.hash })
-
-    useEffect(() => {
-        if (receiptTx) {
-            console.log(receiptTx.logs[0].topics, data, 'RECEIPT')
-            const topics = decodeEventLog({
-                abi: FactoryABI,
-                data: receiptTx.logs[0].data,
-                topics: receiptTx.logs[0].topics
-            })
-            const args: any = topics.args
-            console.log(args._address, "TOPICS DECODED - GET INT ADDR")
-            if (args._address) {
-                setDeployedAddr(args._address)
+    const deployIntegrator = async () => {
+        const signatures: string[] = [];
+        Object.keys(inputs).forEach((x) => {
+            if (x.includes('functionSignature')) {
+                signatures.push(inputs[x])
             }
-        }
-
-    }, [isSuccessTx])
+        })
+        const data = encodeFunctionData({
+            abi: FactoryABI,
+            functionName: 'deployNewIntegrator',
+            args: [
+                inputs.externalProtocol,
+                inputs.withdrawAddress,
+                inputs.protocolCategory,
+                signatures
+            ]
+        })
+        const txHash = await window.ethereum.request({
+            "method": "eth_sendTransaction",
+            "params": [
+                {
+                    to: factoryAddress,
+                    from: account,
+                    data
+                }
+            ]
+        });
+        return txHash
+    }
 
     const [inputs, setInputs] = useState<any>({});
     const [deployedAddr, setDeployedAddr] = useState<string>("")
@@ -98,23 +102,44 @@ function Integrator() {
         }
     ];
 
+    async function waitForTransactionReceipt(ethereum: any, txHash: string) {
+        return new Promise((resolve, reject) => {
+            const interval = setInterval(async () => {
+                try {
+                    const receipt = await ethereum.request({
+                        method: 'eth_getTransactionReceipt',
+                        params: [txHash]
+                    });
+
+                    if (receipt && receipt.transactionHash) {
+                        clearInterval(interval);
+                        console.log(receipt)
+                        resolve(receipt);
+                    }
+                } catch (error) {
+                    clearInterval(interval);
+                    reject(error);
+                }
+            }, 5000); // Poll every 5 seconds
+        });
+    }
+
     const handleSubmit = async () => {
         try {
-            const signatures: string[] = [];
-            Object.keys(inputs).forEach((x) => {
-                if (x.includes('functionSignature')) {
-                    signatures.push(inputs[x])
+            const hash: any = await deployIntegrator()
+            const res: any = await waitForTransactionReceipt(window.ethereum, hash)
+            if (res) {
+                const topics = decodeEventLog({
+                    abi: FactoryABI,
+                    data: res.logs[0].data,
+                    topics: res.logs[0].topics
+                })
+                const args: any = topics.args
+                console.log(args._address, "TOPICS DECODED - GET INT ADDR")
+                if (args._address) {
+                    setDeployedAddr(args._address)
                 }
-            })
-            console.log('ABOUT TO WRITE')
-            await write({
-                args: [
-                    inputs.externalProtocol,
-                    inputs.withdrawAddress,
-                    inputs.protocolCategory,
-                    signatures,
-                ],
-            })
+            }
         } catch (err) {
             console.log(err)
         }
@@ -134,9 +159,9 @@ function Integrator() {
     };
 
     let txDisplay = null
-    if (isPendingTx) {
-        txDisplay = <Typography color="primary">Transaction pending...</Typography>
-    }
+    // if (isPendingTx) {
+    //     txDisplay = <Typography color="primary">Transaction pending...</Typography>
+    // }
     if (deployedAddr) {
         txDisplay = <Typography color="primary">New Integrator for {inputs.protocolName} deployed at: <a style={{ color: "white" }} href={"https://explorer.goerli.linea.build/address/" + deployedAddr}>{deployedAddr}</a></Typography>
     }
