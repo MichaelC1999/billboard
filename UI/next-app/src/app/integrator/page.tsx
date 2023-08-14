@@ -80,8 +80,10 @@ const IntegratorList = () => {
             console.log(err)
         }
     }
+    console.log('Integrator', window.ethereum.networkVersion, address, window.ethereum.selectedAddress, process.env.CHAIN_ID)
 
     useEffect(() => {
+        console.log('Integrator USE effect', window.ethereum.networkVersion, address, window.ethereum.selectedAddress, process.env.CHAIN_ID)
         if (window.ethereum.networkVersion == process.env.CHAIN_ID) {
             getIntegrators("lend")
             getIntegrators('dex')
