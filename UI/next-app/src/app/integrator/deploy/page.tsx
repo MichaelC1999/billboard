@@ -26,9 +26,9 @@ function Integrator() {
     const factoryAddress: any = process.env.factoryAddress;
     const currentAccount = window.ethereum.selectedAddress;
     const [account, setAccount] = useState<string | null>(currentAccount)
-
+    console.log(currentAccount)
     useEffect(() => {
-        if (!window.ethereum.isConnected()) {
+        if (!window.ethereum.isConnected() || !currentAccount) {
             window?.ethereum?.enable()
         }
         window.ethereum.on('accountsChanged', (accounts: any) => setAccount(accounts[0]));
