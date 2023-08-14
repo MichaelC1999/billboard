@@ -41,7 +41,7 @@ const IntegratorList = () => {
     const [integrators, setIntegrators] = useState<{ [x: string]: string[] }>({});
     const [selectedIntegrator, setSelectedIntegrator] = useState<string>("")
 
-    const { isConnected } = useAccount()
+    const { isConnected, address } = useAccount()
 
     useEffect(() => {
         if (!isConnected) {
@@ -81,14 +81,14 @@ const IntegratorList = () => {
     }
 
     useEffect(() => {
-        console.log("USE EFFECT chain", chain?.id === process.env.CHAIN_ID, chain?.id, process.env.CHAIN_ID)
-        if (chain?.id === process.env.CHAIN_ID) {
+        // console.log("USE EFFECT chain", chain, address, isConnected, window.ethereum.selectedAddress, window.ethereum.networkVersion, process.env.CHAIN_ID)
+        if (window.ethereum.networkVersion == process.env.CHAIN_ID) {
             getIntegrators("lend")
             getIntegrators('dex')
             getIntegrators('nft')
             getIntegrators('other')
         }
-    }, [chain])
+    }, [window.ethereum.networkVersion, address, window.ethereum.selectedAddress])
 
     if (selectedIntegrator) {
         return <IntegratorPage integratorAddress={selectedIntegrator} closeIntegrator={() => setSelectedIntegrator("")} />
