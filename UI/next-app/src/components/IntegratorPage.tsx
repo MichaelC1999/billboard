@@ -8,15 +8,12 @@ import Typography from '@material-ui/core/Typography';
 import { ThemeProvider, makeStyles } from '@material-ui/core/styles';
 
 import { type Address, useContractRead, useContractWrite, useWaitForTransaction, useAccount, useConnect } from 'wagmi'
-import { stringToHex } from "viem";
-import { useRouter } from 'next/navigation'
-import { useNetwork, useBalance } from 'wagmi'
 import IntegratorABI from "../ABIs/Integrator.json"
 import IntegratorListItem from "./IntegratorListItem";
 import { Box, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@material-ui/core";
 import { darkTheme } from "../config/theme";
 import Header from "./Header";
-import NetworkManager from "./NetworkManager";
+import { NetworkSwitcher } from "./NetworkSwitcher";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -38,11 +35,15 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function IntegratorPage({ integratorAddress, closeIntegrator }: any) {
+    const currentAccount = window.ethereum.selectedAddress;
     const { isConnected } = useAccount()
+    const [account, setAccount] = useState<string | null>(currentAccount)
+
     useEffect(() => {
         if (!isConnected) {
             window?.ethereum?.enable()
         }
+        window.ethereum.on('accountsChanged', (accounts: any) => setAccount(accounts[0]));
     }, [])
     const classes = useStyles();
 
@@ -72,7 +73,7 @@ function IntegratorPage({ integratorAddress, closeIntegrator }: any) {
     return (<>
         <Header />
         <ThemeProvider theme={darkTheme}>
-            <NetworkManager />
+            <NetworkSwitcher />
             <Button color="secondary" style={{ margin: "24px", minWidth: "120px", textAlign: "center", backgroundColor: "white" }} onClick={closeIntegrator}>BACK</Button>
             <Container>
                 <Box className={classes.root}>

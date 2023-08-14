@@ -88,7 +88,7 @@ const InputForm = ({ inputs, setInputs, handleSubmit, title, elements, addElemen
                 color="primary"
                 onClick={handleSubmit}
                 style={{ marginTop: "6px" }}
-                disabled={chain?.id !== process.env.CHAIN_ID}
+                disabled={window.ethereum.networkVersion + "" !== process.env.CHAIN_ID + ""}
             >
                 Submit
             </Button>

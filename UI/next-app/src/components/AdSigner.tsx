@@ -45,7 +45,7 @@ export function AdSigner({ integratorAddress, passSignature, buttonLabel }: any)
 
     return (
         <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-            <Button variant="contained" color="primary" disabled={chain?.id !== process.env.CHAIN_ID} onClick={executionFlow} className={classes.button}>
+            <Button variant="contained" color="primary" disabled={window.ethereum.networkVersion + "" !== process.env.CHAIN_ID + ""} onClick={executionFlow} className={classes.button}>
                 {buttonLabel}
             </Button>
         </div>

@@ -11,7 +11,7 @@ import { encodeFunctionData } from 'viem'
 import { darkTheme } from "../../config/theme";
 import Header from "../../components/Header";
 import IntegratorPage from "../../components/IntegratorPage";
-import NetworkManager from "../../components/NetworkManager";
+import { NetworkSwitcher } from "../../components/NetworkSwitcher";
 
 const useStyles = makeStyles((theme) => ({
     table: {
@@ -45,9 +45,8 @@ const IntegratorList = () => {
         if (!isConnected) {
             window?.ethereum?.enable()
         }
-        window.ethereum.on('accountsChanged', (accounts: any) => setAccount(accounts[1]));
+        window.ethereum.on('accountsChanged', (accounts: any) => setAccount(accounts[0]));
     }, [])
-
 
     const getIntegrators = async (category: string) => {
         try {
@@ -81,9 +80,7 @@ const IntegratorList = () => {
     }
 
     useEffect(() => {
-        console.log("check", account)
         if (window.ethereum.networkVersion == process.env.CHAIN_ID) {
-            console.log('ENTERED?')
             getIntegrators("lend")
             getIntegrators('dex')
             getIntegrators('nft')
@@ -131,7 +128,7 @@ const IntegratorList = () => {
     return (<>
         <Header />
         <ThemeProvider theme={darkTheme}>
-            <NetworkManager />
+            <NetworkSwitcher />
             <Container maxWidth="xl">
                 <Typography variant="h3" color="primary" className={classes.title}>
                     Integrators

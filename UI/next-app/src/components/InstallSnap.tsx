@@ -59,7 +59,7 @@ export function InstallSnap({ displayManualInstall }: any) {
     let button = null;
     if (displayManualInstall) {
         button = <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-            <Button variant="contained" color="primary" disabled={chain?.id !== process.env.CHAIN_ID} onClick={installBillboardSnap} className={classes.button}>
+            <Button variant="contained" color="primary" disabled={window.ethereum.networkVersion + "" !== process.env.CHAIN_ID + ""} onClick={installBillboardSnap} className={classes.button}>
                 Install Billboard Snap
             </Button>
         </div>

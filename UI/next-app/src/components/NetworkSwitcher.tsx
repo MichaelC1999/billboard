@@ -6,10 +6,42 @@ import { useNetwork, useSwitchNetwork } from 'wagmi';
 import { Box, Button, Typography } from '@material-ui/core';
 
 export function NetworkSwitcher() {
-  const { chain } = useNetwork();
-  const { chains, error, isLoading, pendingChainId, switchNetwork } = useSwitchNetwork();
+  const { chains, error, isLoading, pendingChainId } = useSwitchNetwork();
 
   const chainToUse = chains.find((x: any) => x.id === process.env.CHAIN_ID);
+  const chain = chains.find((x: any) => x.id == window.ethereum.networkVersion)
+  const switchNetwork = async () => {
+    try {
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: '0xe704' }],
+      });
+    } catch (switchError: any) {
+      // This error code indicates that the chain has not been added to MetaMask.
+      if (switchError.code === 4902) {
+        try {
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [
+              {
+                chainId: '0xe704',
+                chainName: 'linea-testnet',
+                rpcUrls: ["https://linea-goerli.infura.io/v3/" + process.env.INFURA_API_KEY],
+              },
+            ],
+          });
+        } catch (addError) {
+          // handle "add" error
+        }
+      }
+      // handle other "switch" errors
+    }
+  }
+
+  if (window.ethereum.networkVersion == process.env.CHAIN_ID) {
+    return null
+  }
+
 
   return (
     <div>
@@ -26,7 +58,6 @@ export function NetworkSwitcher() {
             </Typography>
             <Typography variant="body1">
               You are currently connected to {chain?.name ?? chain?.id}
-              {chain?.unsupported && ' (unsupported)'}
             </Typography>
 
             {switchNetwork && (
@@ -36,7 +67,7 @@ export function NetworkSwitcher() {
                     key={chainToUse.id}
                     variant="contained"
                     color="primary"
-                    onClick={() => switchNetwork(chainToUse.id)}
+                    onClick={() => switchNetwork()}
                   >
                     Switch to {chainToUse.name}
                     {isLoading && chainToUse.id === pendingChainId && ' (switching)'}
@@ -48,7 +79,7 @@ export function NetworkSwitcher() {
                         key={x.id}
                         variant="outlined"
                         color="default"
-                        onClick={() => switchNetwork(x.id)}
+                        onClick={() => switchNetwork()}
                         style={{ margin: '5px' }}
                       >
                         {x.name}

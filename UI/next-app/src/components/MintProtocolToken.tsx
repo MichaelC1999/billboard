@@ -40,7 +40,7 @@ function MintProtocolToken() {
         <Container maxWidth="md" style={{ margin: "32px" }}>
             <Grid container direction="column" alignItems="center">
                 <Typography variant="h6" color="primary">Need test tokens to fund a campaign? Mint with the button below!</Typography>
-                <Button variant="contained" color="primary" disabled={isLoading || chain?.id !== process.env.CHAIN_ID} onClick={handleMint} className={classes.button}>
+                <Button variant="contained" color="primary" disabled={isLoading || window.ethereum.networkVersion + "" !== process.env.CHAIN_ID + ""} onClick={handleMint} className={classes.button}>
                     Mint 100 BILL
                 </Button>
 

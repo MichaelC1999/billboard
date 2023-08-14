@@ -15,7 +15,7 @@ import { TokenApprove } from "../../../components/TokenApprove";
 import { darkTheme } from "../../../config/theme";
 import { Box, Button, CircularProgress, Grid, ThemeProvider, Typography, makeStyles } from "@material-ui/core";
 import Header from "../../../components/Header";
-import NetworkManager from "../../../components/NetworkManager";
+import { NetworkSwitcher } from "../../../components/NetworkSwitcher";
 
 const useStyles = makeStyles((theme) => ({
     formContainer: {
@@ -31,15 +31,17 @@ const useStyles = makeStyles((theme) => ({
 function CreateCampaign() {
     const classes = useStyles();
     const { isConnected } = useAccount()
-    const { chain } = useNetwork()
+    const currentAccount = window.ethereum.selectedAddress;
+    const [account, setAccount] = useState<string | null>(currentAccount)
+
     useEffect(() => {
         if (!isConnected) {
             window?.ethereum?.enable()
         }
+        window.ethereum.on('accountsChanged', (accounts: any) => setAccount(accounts[0]));
     }, [])
 
     const factoryAddress: any = process.env.factoryAddress;
-    const currentAccount = window.ethereum.selectedAddress;
     const [allowance, setAllowance] = useState<Number>(0);
 
     const { data: treasuryAddrOnChain } = useContractRead({
@@ -51,14 +53,10 @@ function CreateCampaign() {
     })
 
     useEffect(() => {
-        console.log(treasuryAddrOnChain, "TESOURO", process.env.treasuryAddress)
-    }, [treasuryAddrOnChain])
-
-    useEffect(() => {
-        if (chain?.id !== process.env.CHAIN_ID) {
+        if (window.ethereum.networkVersion == process.env.CHAIN_ID) {
             getAllowance()
         }
-    }, [chain])
+    }, [account])
 
     const getAllowance = async () => {
         try {
@@ -99,9 +97,7 @@ function CreateCampaign() {
     const { data: receiptTx, isLoading: isPendingTx, isSuccess: isSuccessTx, isError: isErrorTx } = useWaitForTransaction({ hash: data?.hash })
 
     useEffect(() => {
-        console.log('IN THE SUCCESS EFFECT')
         if (receiptTx) {
-            console.log(receiptTx.logs, data, 'GET THE TOPICS')
             const topics = decodeEventLog({
                 abi: FactoryABI,
                 data: receiptTx.logs[2].data,
@@ -167,7 +163,6 @@ function CreateCampaign() {
     const [executeApproval, setExecuteApproval] = useState<Boolean>(false);
     let approvalRender = null;
     if (executeApproval) {
-        console.log(Number(allowance) < Number(inputs.initialCampaignSpend * (10 ** 18)), allowance)
         if (Number(allowance) < Number(inputs.initialCampaignSpend * (10 ** 18))) {
             approvalRender = (
                 <TokenApprove
@@ -194,7 +189,7 @@ function CreateCampaign() {
     return (<>
         <Header />
         <ThemeProvider theme={darkTheme}>
-            <NetworkManager />
+            <NetworkSwitcher />
             <Box className="createCampaign">
                 <Grid container direction="column" alignItems="center">
                     <Grid item xs={12} md={8} className={classes.formContainer}>

@@ -11,7 +11,7 @@ import { Box, Button, Container, Grid, ThemeProvider, Typography, makeStyles } f
 import FactoryABI from "../../../ABIs/Factory.json"
 import { darkTheme } from "../../../config/theme";
 import Header from "../../../components/Header";
-import NetworkManager from "../../../components/NetworkManager";
+import { NetworkSwitcher } from "../../../components/NetworkSwitcher";
 
 const useStyles = makeStyles((theme) => ({
     txContainer: {
@@ -26,10 +26,14 @@ function Integrator() {
     const { isConnected } = useAccount()
     const factoryAddress: any = process.env.factoryAddress;
 
+    const currentAccount = window.ethereum.selectedAddress;
+    const [account, setAccount] = useState<string | null>(currentAccount)
+
     useEffect(() => {
         if (!isConnected) {
             window?.ethereum?.enable()
         }
+        window.ethereum.on('accountsChanged', (accounts: any) => setAccount(accounts[0]));
     }, [])
 
     const { write, data } = useContractWrite({
@@ -137,7 +141,7 @@ function Integrator() {
     return (<>
         <Header />
         <ThemeProvider theme={darkTheme}>
-            <NetworkManager />
+            <NetworkSwitcher />
             <Container maxWidth="sm">
                 <InputForm inputs={inputs} setInputs={setInputs} handleSubmit={handleSubmit} title="Deploy New Integrator" elements={elements} addElement={handleAddFuncSig} removeElement={handleRemoveLastFuncSig} />
                 <Grid item xs={12} md={8} className={classes.txContainer}>

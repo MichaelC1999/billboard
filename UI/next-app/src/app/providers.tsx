@@ -8,6 +8,7 @@ import { WagmiConfig } from 'wagmi'
 import { chains, config, walletConnectProjectId } from '../wagmi'
 import { connectSnap, getSnap } from '../utils'
 import { defaultSnapOrigin } from '../config'
+import { NetworkSwitcher } from '../components/NetworkSwitcher'
 
 const ethereumClient = new EthereumClient(config, chains)
 
@@ -18,7 +19,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
     const provider: any = window;
     const providerEth = provider.ethereum;
     isFlask(providerEth)
-    window.ethereum.on('chainChanged', (chainId) => window.location.reload());
+    window.ethereum.on('chainChanged', (chainId) => {
+      if (chainId == "0xe704") {
+        return window.location.reload()
+      }
+    });
   }, [])
 
   const installBillboardSnap = async () => {
@@ -42,7 +47,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
       return false;
     }
   };
-
 
   return (
     <WagmiConfig config={config}>

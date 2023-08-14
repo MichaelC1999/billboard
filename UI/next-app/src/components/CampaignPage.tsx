@@ -10,14 +10,11 @@ import CampaignABI from "../ABIs/Campaign.json"
 
 
 import { type Address, useContractRead, useContractWrite, useWaitForTransaction, useAccount, useConnect } from 'wagmi'
-import { stringToHex } from "viem";
-import { useRouter } from 'next/navigation'
-import { useNetwork, useBalance } from 'wagmi'
 import { Box, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@material-ui/core";
 import CampaignListItem from "./CampaignListItem";
 import { darkTheme } from "../config/theme";
 import Header from "./Header";
-import NetworkManager from "./NetworkManager";
+import { NetworkSwitcher } from "./NetworkSwitcher";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -40,12 +37,15 @@ const useStyles = makeStyles((theme) => ({
 
 
 function CampaignPage({ campaignAddress, closeCampaign }: any) {
-    const currentAddress = window.ethereum.selectedAddress;
+    const currentAccount = window.ethereum.selectedAddress;
     const { isConnected } = useAccount()
+    const [account, setAccount] = useState<string | null>(currentAccount)
+
     useEffect(() => {
         if (!isConnected) {
             window?.ethereum?.enable()
         }
+        window.ethereum.on('accountsChanged', (accounts: any) => setAccount(accounts[0]));
     }, [])
 
     const classes = useStyles();
@@ -84,7 +84,7 @@ function CampaignPage({ campaignAddress, closeCampaign }: any) {
 
     const handleDeposit = () => {
         deposit({
-            args: [parseFloat(depositAmount) * (10 ** 18), currentAddress]
+            args: [parseFloat(depositAmount) * (10 ** 18), currentAccount]
         })
     }
 
@@ -97,7 +97,7 @@ function CampaignPage({ campaignAddress, closeCampaign }: any) {
     return (<>
         <Header />
         <ThemeProvider theme={darkTheme}>
-            <NetworkManager />
+            <NetworkSwitcher />
             <Button color="secondary" style={{ margin: "24px", minWidth: "120px", textAlign: "center", backgroundColor: "white" }} onClick={closeCampaign}>BACK</Button>
             <Container>
                 <Box className={classes.root}>

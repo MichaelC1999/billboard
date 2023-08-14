@@ -12,23 +12,25 @@ import { darkTheme } from "../../config/theme";
 import Header from "../../components/Header";
 import CampaignPage from "../../components/CampaignPage";
 import { NetworkSwitcher } from "../../components/NetworkSwitcher";
-import NetworkManager from "../../components/NetworkManager";
 
 
 const CampaignList = () => {
     const router = useRouter()
     const { isConnected } = useAccount()
     const { chain } = useNetwork()
-    const currentAccount = window.ethereum.selectedAddress;
 
     const factoryAddress = process.env.factoryAddress;
     const [campaigns, setCampaigns] = useState<{ [x: string]: string[] }>({});
     const [selectedCampaign, setSelectedCampaign] = useState<string>("")
 
+    const currentAccount = window.ethereum.selectedAddress;
+    const [account, setAccount] = useState<string | null>(currentAccount)
+
     useEffect(() => {
         if (!isConnected) {
             window?.ethereum?.enable()
         }
+        window.ethereum.on('accountsChanged', (accounts: any) => setAccount(accounts[0]));
     }, [])
 
     const getCampaigns = async (category: string) => {
@@ -63,13 +65,13 @@ const CampaignList = () => {
     }
 
     useEffect(() => {
-        if (chain?.id === process.env.CHAIN_ID) {
+        if (window.ethereum.networkVersion == process.env.CHAIN_ID) {
             getCampaigns("lend")
             getCampaigns('dex')
             getCampaigns('nft')
             getCampaigns('other')
         }
-    }, [chain])
+    }, [account])
 
     if (selectedCampaign) {
         return <CampaignPage campaignAddress={selectedCampaign} closeCampaign={() => setSelectedCampaign("")} />
@@ -110,7 +112,7 @@ const CampaignList = () => {
     return (<>
         <Header />
         <ThemeProvider theme={darkTheme}>
-            <NetworkManager />
+            <NetworkSwitcher />
             <Container maxWidth="xl">
                 <Typography style={{ margin: "16px 0" }} variant="h3" color="primary" gutterBottom>
                     Campaigns

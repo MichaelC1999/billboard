@@ -12,7 +12,7 @@ import { darkTheme } from '../../config/theme';
 import { AdSigner } from '../../components/AdSigner';
 import InstallSnap from '../../components/InstallSnap';
 import Header from '../../components/Header';
-import NetworkManager from '../../components/NetworkManager';
+import { NetworkSwitcher } from '../../components/NetworkSwitcher';
 
 const useStyles = makeStyles((theme) => ({
     container: {
@@ -26,15 +26,17 @@ const MintNFT = () => {
     const [signature, setSignature] = useState<string>("");
 
     const integratorAddress = "0xa8f50F114BAA9A97F1B80DdAE76C35fd933d624A";
-    const currentAccount: any = window.ethereum.selectedAddress;
+    const currentAccount = window.ethereum.selectedAddress;
+    const [account, setAccount] = useState<string | null>(currentAccount)
 
     const { isConnected } = useAccount()
-
     useEffect(() => {
         if (!isConnected) {
             window?.ethereum?.enable()
         }
+        window.ethereum.on('accountsChanged', (accounts: any) => setAccount(accounts[0]));
     }, [])
+
 
     const { write, data } = useContractWrite({
         abi: IntegratorABI,
@@ -59,7 +61,6 @@ const MintNFT = () => {
 
 
     useEffect(() => {
-        console.log('In the useEffect')
         if (receiptTx) {
             const topics = decodeEventLog({
                 abi: ExampleIntegratorABI,
@@ -70,11 +71,10 @@ const MintNFT = () => {
         }
     }, [isSuccessTx])
 
-
     return (<>
         <Header />
         <ThemeProvider theme={darkTheme}>
-            <NetworkManager />
+            <NetworkSwitcher />
             <Container maxWidth="lg" className={classes.container}>
                 <Grid container direction="column" alignItems="center">
                     <Grid item xs={12}>
