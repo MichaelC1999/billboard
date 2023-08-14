@@ -11,6 +11,7 @@ import { Box, Button, Container, Grid, ThemeProvider, Typography, makeStyles } f
 import FactoryABI from "../../../ABIs/Factory.json"
 import { darkTheme } from "../../../config/theme";
 import Header from "../../../components/Header";
+import NetworkManager from "../../../components/NetworkManager";
 
 const useStyles = makeStyles((theme) => ({
     txContainer: {
@@ -22,10 +23,8 @@ const useStyles = makeStyles((theme) => ({
 
 function Integrator() {
     const classes = useStyles();
-
-    const factoryAddress: any = process.env.factoryAddress;
-
     const { isConnected } = useAccount()
+    const factoryAddress: any = process.env.factoryAddress;
 
     useEffect(() => {
         if (!isConnected) {
@@ -33,7 +32,7 @@ function Integrator() {
         }
     }, [])
 
-    const { write, data, isSuccess, isLoading } = useContractWrite({
+    const { write, data } = useContractWrite({
         abi: FactoryABI,
         address: factoryAddress,
         functionName: 'deployNewIntegrator',
@@ -41,7 +40,6 @@ function Integrator() {
     })
 
     const { data: receiptTx, isLoading: isPendingTx, isSuccess: isSuccessTx } = useWaitForTransaction({ hash: data?.hash })
-
 
     useEffect(() => {
         if (receiptTx) {
@@ -139,10 +137,10 @@ function Integrator() {
     return (<>
         <Header />
         <ThemeProvider theme={darkTheme}>
+            <NetworkManager />
             <Container maxWidth="sm">
                 <InputForm inputs={inputs} setInputs={setInputs} handleSubmit={handleSubmit} title="Deploy New Integrator" elements={elements} addElement={handleAddFuncSig} removeElement={handleRemoveLastFuncSig} />
                 <Grid item xs={12} md={8} className={classes.txContainer}>
-
                     {txDisplay}
                 </Grid>
             </Container>

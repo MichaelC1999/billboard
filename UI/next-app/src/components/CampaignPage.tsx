@@ -17,6 +17,7 @@ import { Box, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHea
 import CampaignListItem from "./CampaignListItem";
 import { darkTheme } from "../config/theme";
 import Header from "./Header";
+import NetworkManager from "./NetworkManager";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -39,25 +40,17 @@ const useStyles = makeStyles((theme) => ({
 
 
 function CampaignPage({ campaignAddress, closeCampaign }: any) {
-    const router = useRouter()
     const currentAddress = window.ethereum.selectedAddress;
-
-
     const { isConnected } = useAccount()
-
     useEffect(() => {
         if (!isConnected) {
             window?.ethereum?.enable()
         }
     }, [])
 
-
     const classes = useStyles();
-
     const [depositAmount, setDepositAmount] = useState("");
     const [withdrawAmount, setWithdrawAmount] = useState("");
-
-
     const { write: withdraw, data: dataWithdraw, } = useContractWrite({
         abi: CampaignABI,
         address: campaignAddress,
@@ -104,9 +97,11 @@ function CampaignPage({ campaignAddress, closeCampaign }: any) {
     return (<>
         <Header />
         <ThemeProvider theme={darkTheme}>
+            <NetworkManager />
+            <Button color="secondary" style={{ margin: "24px", minWidth: "120px", textAlign: "center", backgroundColor: "white" }} onClick={closeCampaign}>BACK</Button>
             <Container>
                 <Box className={classes.root}>
-                    <Button color="secondary" style={{ marginTop: "12px", minWidth: "100px", textAlign: "center", backgroundColor: "white" }} onClick={closeCampaign}>BACK</Button>                    <Typography variant="h3" color="textPrimary" style={{ margin: "24px 12px" }}>Campaign Management Page</Typography>
+                    <Typography variant="h3" color="textPrimary" style={{ margin: "24px 12px" }}>Campaign Management Page</Typography>
                     <Grid container direction="column" alignItems="stretch" className={classes.root}>
                         <Grid item xs={12} className={classes.table}>
                             <TableContainer component={Paper} style={{ width: '100%' }}>
@@ -117,10 +112,11 @@ function CampaignPage({ campaignAddress, closeCampaign }: any) {
                                                 <TableCell>Campaign Address</TableCell>
                                                 <TableCell></TableCell>
                                                 <TableCell>Campaign Title</TableCell>
-                                                <TableCell>cumulativeAdViews</TableCell>
-                                                <TableCell>cumulativeAdQueued</TableCell>
-                                                <TableCell>Base Ad Spend</TableCell>
-                                                <TableCell>Remaining Ad Spend</TableCell>
+                                                <TableCell>Ad Content</TableCell>
+                                                <TableCell>Total Views</TableCell>
+                                                <TableCell>Total Queued</TableCell>
+                                                <TableCell>Base Spend</TableCell>
+                                                <TableCell>Remaining Spend</TableCell>
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>

@@ -16,7 +16,7 @@ import IntegratorListItem from "./IntegratorListItem";
 import { Box, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@material-ui/core";
 import { darkTheme } from "../config/theme";
 import Header from "./Header";
-
+import NetworkManager from "./NetworkManager";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -37,7 +37,6 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-
 function IntegratorPage({ integratorAddress, closeIntegrator }: any) {
     const { isConnected } = useAccount()
     useEffect(() => {
@@ -49,14 +48,14 @@ function IntegratorPage({ integratorAddress, closeIntegrator }: any) {
 
     const [withdrawAmount, setWithdrawAmount] = useState("");
 
-    const { write, data, isSuccess } = useContractWrite({
+    const { write, data } = useContractWrite({
         abi: IntegratorABI,
         address: integratorAddress,
         functionName: 'integratorWithdraw',
         chainId: Number(process.env.CHAIN_ID || 1)
     })
 
-    const { data: receiptTx, isLoading: isPendingTx, isSuccess: isSuccessTx } = useWaitForTransaction({ hash: data?.hash })
+    const { data: receiptTx, isSuccess: isSuccessTx } = useWaitForTransaction({ hash: data?.hash })
 
     const handleWithdraw = () => {
         write({
@@ -73,9 +72,10 @@ function IntegratorPage({ integratorAddress, closeIntegrator }: any) {
     return (<>
         <Header />
         <ThemeProvider theme={darkTheme}>
+            <NetworkManager />
+            <Button color="secondary" style={{ margin: "24px", minWidth: "120px", textAlign: "center", backgroundColor: "white" }} onClick={closeIntegrator}>BACK</Button>
             <Container>
                 <Box className={classes.root}>
-                    <Button color="secondary" style={{ marginTop: "12px", minWidth: "100px", textAlign: "center", backgroundColor: "white" }} onClick={closeIntegrator}>BACK</Button>
                     <Typography variant="h3" style={{ margin: "16px 0" }} color="textPrimary">Integrator Management Page</Typography>
                     <Grid container direction="column" alignItems="center" className={classes.root}>
                         <Grid item xs={12} className={classes.table}>

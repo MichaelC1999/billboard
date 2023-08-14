@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Button, TextField, Container, Typography, FormControl, InputLabel, Select, MenuItem, makeStyles } from "@material-ui/core";
+import { useNetwork } from "wagmi";
 
 const useStyles = makeStyles({
     select: {
@@ -10,10 +11,8 @@ const useStyles = makeStyles({
 });
 
 const InputForm = ({ inputs, setInputs, handleSubmit, title, elements, addElement, removeElement }: any) => {
-
     const classes = useStyles();
-
-
+    const { chain } = useNetwork();
     const handleChange = (event: any) => {
         setInputs({
             ...inputs,
@@ -33,7 +32,6 @@ const InputForm = ({ inputs, setInputs, handleSubmit, title, elements, addElemen
                         color="secondary"
                         onClick={addElement}
                         style={{ width: "100%", margin: "6px 0" }}
-
                     >
                         {element.label}
                     </Button>)
@@ -90,6 +88,7 @@ const InputForm = ({ inputs, setInputs, handleSubmit, title, elements, addElemen
                 color="primary"
                 onClick={handleSubmit}
                 style={{ marginTop: "6px" }}
+                disabled={chain?.id !== process.env.CHAIN_ID}
             >
                 Submit
             </Button>

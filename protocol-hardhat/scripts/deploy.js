@@ -1,9 +1,4 @@
-// We require the Hardhat Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-//
-// You can also run a script with `npx hardhat run <script>`. If you do that, Hardhat
-// will compile your contracts, add the Hardhat Runtime Environment's members to the
-// global scope, and execute the script.
+
 const hre = require("hardhat");
 
 async function main() {
@@ -13,18 +8,17 @@ async function main() {
     value: hre.ethers.parseEther("0.00"),
   })).waitForDeployment();
 
-  const lock = await hre.ethers.deployContract("Factory", [token.target], {
+  const factoryDeploy = await hre.ethers.deployContract("Factory", [token.target], {
     value: hre.ethers.parseEther("0.00"),
   });
 
-  const contract = await lock.waitForDeployment();
+  const factoryContract = await factoryDeploy.waitForDeployment();
 
-  const factory = await hre.ethers.getContractAt("Factory", contract.target)
+  const factory = await hre.ethers.getContractAt("Factory", factoryContract.target)
 
 
-  console.log("Factory: " + contract.target)
+  console.log("Factory: " + factoryContract.target)
   const treasuryAddress = await factory.treasuryAddress()
-  //read treasury address from contract
   console.log("treasuryAddress", treasuryAddress, "DEF", await factory.fallbackAddress())
 
   console.log("tokenAddress", await factory.protocolToken())
@@ -34,6 +28,13 @@ async function main() {
 
   console.log(await treasury.protocolToken())
 
+  const MintNFTDeploy = await hre.ethers.deployContract("ExampleIntegrator", [], {
+    value: hre.ethers.parseEther("0.00"),
+  })
+
+  const MintNFTDeployContract = await MintNFTDeploy.waitForDeployment()
+
+  console.log(" Verify: " + MintNFTDeployContract.target)
 
 }
 

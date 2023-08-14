@@ -143,7 +143,6 @@ contract Factory {
     /// @return A list of campaign addresses.
     function getCampaignAddresses(string memory category) external view returns(address[] memory) {
         uint catIdx = getCategoryIndex(category);
-        require(msg.sender == deployer, "The address list can only be viewed by the contract deployer");
         if (campaignCountByType[catIdx] == 0) {
             return new address[](0);
         }
@@ -175,7 +174,6 @@ contract Factory {
     /// @return A list of integrator addresses.
     function getIntegratorAddresses(string memory category) external view returns(address[] memory) {
         uint catIdx = getCategoryIndex(category);
-        require(msg.sender == deployer, "The address list can only be viewed by the contract deployer");
         if (integratorCountByType[catIdx] == 0) {
             return new address[](0);
         }

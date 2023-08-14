@@ -33,17 +33,6 @@ contract Treasury {
         campaignSpendRemaining[msg.sender] += amount;
         IERC20(protocolToken).transferFrom(initiator, address(this), amount);
     }
-    
-    /// @notice Registers a pending spend amount for a campaign.
-    /// @dev A pending spend occurs when an ad is queued but has not been displayed yet
-    /// @dev Pending spend is held in escrow. Neither the campaign nor the integrator can withdraw it
-    /// @param amount The amount to be allocated as pending.
-    /// @param campaign The address of the campaign.
-    /// @return The new pending balance for the campaign.
-    function newPendingSpend(uint amount, address campaign) external returns (uint) {
-        require(msg.sender == factoryAddress, "This function can only be called by the campaign factory contract");
-        return campaignSpendPending[campaign] += amount;
-    }
 
     /// @notice Sets the withdrawal address for a campaign.
     /// @param campaignAddress The address of the campaign.
@@ -76,6 +65,17 @@ contract Treasury {
         integratorRevenueUncollected[msg.sender] -= amount;
         integratorRevenueWithdrawn[msg.sender] += amount;
         IERC20(protocolToken).transfer(integratorWithdrawAddresses[msg.sender], amount);
+    }
+
+    /// @notice Registers a pending spend amount for a campaign.
+    /// @dev A pending spend occurs when an ad is queued but has not been displayed yet
+    /// @dev Pending spend is held in escrow. Neither the campaign nor the integrator can withdraw it
+    /// @param amount The amount to be allocated as pending.
+    /// @param campaign The address of the campaign.
+    /// @return The new pending balance for the campaign.
+    function newPendingSpend(uint amount, address campaign) external returns (uint) {
+        require(msg.sender == factoryAddress, "This function can only be called by the campaign factory contract");
+        return campaignSpendPending[campaign] += amount;
     }
 
     /// @notice Marks the completion of a spend for an integrator.

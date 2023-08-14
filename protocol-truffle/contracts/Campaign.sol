@@ -27,7 +27,15 @@ contract Campaign {
     /// @param initialAdSpend The initial ad spend.
     /// @param campaignTitleParam The title of the campaign.
     /// @param campaignContentParam The content of the campaign.
-    constructor(address initiator, address treasury, string memory category, string memory protocolName, uint initialAdSpend, string memory campaignTitleParam, string memory campaignContentParam) {
+    constructor(
+        address initiator,
+        address treasury,
+        string memory category,
+        string memory protocolName,
+        uint initialAdSpend,
+        string memory campaignTitleParam,
+        string memory campaignContentParam
+        ) {
         treasuryAddress = treasury;
         if (keccak256(abi.encodePacked(category)) != keccak256(abi.encodePacked("fallback"))) {
             depositSpend(initialAdSpend, initiator);
@@ -38,12 +46,12 @@ contract Campaign {
         campaignCategory = category;
     }
 
-    /// @notice Increments the cumulative ad views by 1.
+    /// @notice Increments the cumulative ad view count by 1.
     function incCumulativeAdViews() external {
         cumulativeAdViews += 1;
     }
 
-    /// @notice Increments the cumulative ad queued by 1.
+    /// @notice Increments the cumulative ad queue count by 1.
     function incCumulativeAdQueued() external {
         cumulativeAdQueued += 1;
     }

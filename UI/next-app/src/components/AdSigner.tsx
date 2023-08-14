@@ -3,7 +3,7 @@
 import { Button, makeStyles } from '@material-ui/core'
 import { defaultSnapOrigin } from '../config';
 import { keccak256, toHex } from 'viem';
-import { useSignMessage } from 'wagmi';
+import { useNetwork, useSignMessage } from 'wagmi';
 import { useEffect } from 'react';
 
 const useStyles = makeStyles((theme) => ({
@@ -14,9 +14,10 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-export function AdSigner({ integratorAddress, passSignature }: any) {
+export function AdSigner({ integratorAddress, passSignature, buttonLabel }: any) {
     const currentAddress = window.ethereum.selectedAddress;
     const classes = useStyles();
+    const { chain } = useNetwork()
 
     const {
         data: signature,
@@ -32,11 +33,8 @@ export function AdSigner({ integratorAddress, passSignature }: any) {
         if (adData === null) {
             return
         }
-
         const data: string = keccak256(toHex(adData || "0x0"))
-        // Make the signature
         await signMessage({ message: data })
-
     }
 
     useEffect(() => {
@@ -47,8 +45,8 @@ export function AdSigner({ integratorAddress, passSignature }: any) {
 
     return (
         <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-            <Button variant="contained" color="primary" onClick={executionFlow} className={classes.button}>
-                Mint me an NFT
+            <Button variant="contained" color="primary" disabled={chain?.id !== process.env.CHAIN_ID} onClick={executionFlow} className={classes.button}>
+                {buttonLabel}
             </Button>
         </div>
     )

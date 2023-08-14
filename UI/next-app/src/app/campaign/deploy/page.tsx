@@ -15,6 +15,7 @@ import { TokenApprove } from "../../../components/TokenApprove";
 import { darkTheme } from "../../../config/theme";
 import { Box, Button, CircularProgress, Grid, ThemeProvider, Typography, makeStyles } from "@material-ui/core";
 import Header from "../../../components/Header";
+import NetworkManager from "../../../components/NetworkManager";
 
 const useStyles = makeStyles((theme) => ({
     formContainer: {
@@ -30,6 +31,7 @@ const useStyles = makeStyles((theme) => ({
 function CreateCampaign() {
     const classes = useStyles();
     const { isConnected } = useAccount()
+    const { chain } = useNetwork()
     useEffect(() => {
         if (!isConnected) {
             window?.ethereum?.enable()
@@ -38,7 +40,6 @@ function CreateCampaign() {
 
     const factoryAddress: any = process.env.factoryAddress;
     const currentAccount = window.ethereum.selectedAddress;
-
     const [allowance, setAllowance] = useState<Number>(0);
 
     const { data: treasuryAddrOnChain } = useContractRead({
@@ -54,8 +55,10 @@ function CreateCampaign() {
     }, [treasuryAddrOnChain])
 
     useEffect(() => {
-        getAllowance()
-    }, [])
+        if (chain?.id !== process.env.CHAIN_ID) {
+            getAllowance()
+        }
+    }, [chain])
 
     const getAllowance = async () => {
         try {
@@ -86,7 +89,7 @@ function CreateCampaign() {
         }
     }
 
-    const { write, data, isSuccess, isLoading } = useContractWrite({
+    const { write, data } = useContractWrite({
         abi: FactoryABI,
         address: factoryAddress,
         functionName: 'deployNewCampaign',
@@ -191,6 +194,7 @@ function CreateCampaign() {
     return (<>
         <Header />
         <ThemeProvider theme={darkTheme}>
+            <NetworkManager />
             <Box className="createCampaign">
                 <Grid container direction="column" alignItems="center">
                     <Grid item xs={12} md={8} className={classes.formContainer}>

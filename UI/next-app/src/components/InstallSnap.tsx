@@ -6,7 +6,7 @@ import { connectSnap, getSnap } from '../utils'
 import { MetaMaskContext } from '../hooks'
 import { defaultSnapOrigin } from '../config'
 import { Button, makeStyles } from '@material-ui/core'
-import { useAccount } from 'wagmi'
+import { useAccount, useNetwork } from 'wagmi'
 
 const useStyles = makeStyles((theme) => ({
     button: {
@@ -18,8 +18,8 @@ const useStyles = makeStyles((theme) => ({
 
 export function InstallSnap({ displayManualInstall }: any) {
     const classes = useStyles();
-
     const { isConnected } = useAccount()
+    const { chain } = useNetwork()
 
     useEffect(() => {
         if (!isConnected) {
@@ -32,7 +32,6 @@ export function InstallSnap({ displayManualInstall }: any) {
         const provider: any = window;
         const providerEth = provider.ethereum;
         isFlask(providerEth)
-
     }, [])
 
     const installBillboardSnap = async () => {
@@ -60,16 +59,13 @@ export function InstallSnap({ displayManualInstall }: any) {
     let button = null;
     if (displayManualInstall) {
         button = <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-            <Button variant="contained" color="primary" onClick={installBillboardSnap} className={classes.button}>
+            <Button variant="contained" color="primary" disabled={chain?.id !== process.env.CHAIN_ID} onClick={installBillboardSnap} className={classes.button}>
                 Install Billboard Snap
             </Button>
         </div>
     }
 
-    return (<>
-        {button}
-    </>
-    )
+    return button
 }
 
 export default InstallSnap

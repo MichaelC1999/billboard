@@ -7,7 +7,7 @@ import "./ProtocolToken.sol";
 
 /// @title Factory
 /// @author Michael Manzano
-/// @notice This contract is for deploying new ad campaign contracts
+/// @notice This contract is for deploying other contracts and maintaining registries
 contract Factory {
 
     // Globals
@@ -47,7 +47,7 @@ contract Factory {
     /// @dev This default campaign is what is always displayed to a user at nonce 0 for a given integrator
     /// @dev This campaign explains that the protocol uses Billboard
     function deployDefaultCampaign() internal {
-        Campaign campaignDeployed = new Campaign(address(this), treasuryAddress, "fallback", "Billboard", 0, "fallbackAddress", "THIS PROTOCOL USES BILLBOARD PROTOCOL. ALL TRANSACTIONS WITH THIS PROTOCOL GET ROUTED THROUGH AN INTEGRATOR CONTRACT. YOU WILL BE SERVED ADVERTISEMENTS BEFORE EACH INTERACTION WITH THIS PROTOCOL.");
+        Campaign campaignDeployed = new Campaign(address(this), treasuryAddress, "fallback", "Billboard", 0, "fallbackAddress", "THIS PROTOCOL USES BILLBOARD PROTOCOL. ALL TRANSACTIONS WITH THIS PROTOCOL GET ROUTED THROUGH AN INTEGRATOR CONTRACT. EVERY APPLICABLE INTERACTION WITH THIS PROTOCOL WILL SERVE ADVERTISEMENTS IN METAMASK. BY AUTHORIZING THIS INTERACTION YOU AGREE TO BE SHOWN ADS.");
         address newCampaignAddress = address(campaignDeployed);
         fallbackAddress = newCampaignAddress;
         campaignOpen[newCampaignAddress] = true;
@@ -143,7 +143,6 @@ contract Factory {
     /// @return A list of campaign addresses.
     function getCampaignAddresses(string memory category) external view returns(address[] memory) {
         uint catIdx = getCategoryIndex(category);
-        require(msg.sender == deployer, "The address list can only be viewed by the contract deployer");
         if (campaignCountByType[catIdx] == 0) {
             return new address[](0);
         }
@@ -175,7 +174,6 @@ contract Factory {
     /// @return A list of integrator addresses.
     function getIntegratorAddresses(string memory category) external view returns(address[] memory) {
         uint catIdx = getCategoryIndex(category);
-        require(msg.sender == deployer, "The address list can only be viewed by the contract deployer");
         if (integratorCountByType[catIdx] == 0) {
             return new address[](0);
         }

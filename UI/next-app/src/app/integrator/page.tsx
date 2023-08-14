@@ -4,13 +4,14 @@ import React, { useState, useEffect } from "react";
 import { Button, Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, makeStyles, ThemeProvider, createMuiTheme, Box } from "@material-ui/core";
 import { useRouter } from 'next/navigation'
 import IntegratorListItem from "../../components/IntegratorListItem";
-import { useAccount } from "wagmi";
+import { useAccount, useNetwork } from "wagmi";
 import FactoryABI from "../../ABIs/Factory.json"
 import { decodeFunctionResult, stringToHex, toBytes, zeroAddress } from "viem";
 import { encodeFunctionData } from 'viem'
 import { darkTheme } from "../../config/theme";
 import Header from "../../components/Header";
 import IntegratorPage from "../../components/IntegratorPage";
+import NetworkManager from "../../components/NetworkManager";
 
 const useStyles = makeStyles((theme) => ({
     table: {
@@ -32,7 +33,8 @@ const useStyles = makeStyles((theme) => ({
 
 const IntegratorList = () => {
     const classes = useStyles();
-    const router = useRouter()
+    const router = useRouter();
+    const { chain } = useNetwork();
     const currentAccount = window.ethereum.selectedAddress;
 
     const integratorFactoryAddress = process.env.factoryAddress;
@@ -79,11 +81,13 @@ const IntegratorList = () => {
     }
 
     useEffect(() => {
-        getIntegrators("lend")
-        getIntegrators('dex')
-        getIntegrators('nft')
-        getIntegrators('other')
-    }, [])
+        if (chain?.id === process.env.CHAIN_ID) {
+            getIntegrators("lend")
+            getIntegrators('dex')
+            getIntegrators('nft')
+            getIntegrators('other')
+        }
+    }, [chain])
 
     if (selectedIntegrator) {
         return <IntegratorPage integratorAddress={selectedIntegrator} closeIntegrator={() => setSelectedIntegrator("")} />
@@ -123,6 +127,7 @@ const IntegratorList = () => {
     return (<>
         <Header />
         <ThemeProvider theme={darkTheme}>
+            <NetworkManager />
             <Container maxWidth="xl">
                 <Typography variant="h3" color="primary" className={classes.title}>
                     Integrators
@@ -159,7 +164,6 @@ const IntegratorList = () => {
                 <Button
                     variant="contained"
                     color="primary"
-                    className={classes.button}
                     onClick={() => router.push('/MintNFT')}
                 >
                     MintNFT Protocol

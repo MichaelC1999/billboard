@@ -4,22 +4,26 @@ import React, { useState, useEffect } from "react";
 import { Button, Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, ThemeProvider } from "@material-ui/core";
 import { useRouter } from 'next/navigation'
 import CampaignListItem from "../../components/CampaignListItem";
-import { useAccount, useContractRead, useContractReads } from "wagmi";
+import { useAccount, useContractRead, useContractReads, useNetwork } from "wagmi";
 import FactoryABI from "../../ABIs/Factory.json"
 import { decodeFunctionResult, stringToHex, toBytes, zeroAddress } from "viem";
 import { encodeFunctionData } from 'viem'
 import { darkTheme } from "../../config/theme";
 import Header from "../../components/Header";
 import CampaignPage from "../../components/CampaignPage";
+import { NetworkSwitcher } from "../../components/NetworkSwitcher";
+import NetworkManager from "../../components/NetworkManager";
 
 
 const CampaignList = () => {
     const router = useRouter()
+    const { isConnected } = useAccount()
+    const { chain } = useNetwork()
     const currentAccount = window.ethereum.selectedAddress;
+
     const factoryAddress = process.env.factoryAddress;
     const [campaigns, setCampaigns] = useState<{ [x: string]: string[] }>({});
     const [selectedCampaign, setSelectedCampaign] = useState<string>("")
-    const { isConnected } = useAccount()
 
     useEffect(() => {
         if (!isConnected) {
@@ -59,11 +63,13 @@ const CampaignList = () => {
     }
 
     useEffect(() => {
-        getCampaigns("lend")
-        getCampaigns('dex')
-        getCampaigns('nft')
-        getCampaigns('other')
-    }, [])
+        if (chain?.id === process.env.CHAIN_ID) {
+            getCampaigns("lend")
+            getCampaigns('dex')
+            getCampaigns('nft')
+            getCampaigns('other')
+        }
+    }, [chain])
 
     if (selectedCampaign) {
         return <CampaignPage campaignAddress={selectedCampaign} closeCampaign={() => setSelectedCampaign("")} />
@@ -96,6 +102,7 @@ const CampaignList = () => {
                 <TableCell></TableCell>
                 <TableCell></TableCell>
                 <TableCell></TableCell>
+                <TableCell></TableCell>
             </TableRow>
         )
     }
@@ -103,6 +110,7 @@ const CampaignList = () => {
     return (<>
         <Header />
         <ThemeProvider theme={darkTheme}>
+            <NetworkManager />
             <Container maxWidth="xl">
                 <Typography style={{ margin: "16px 0" }} variant="h3" color="primary" gutterBottom>
                     Campaigns
@@ -114,10 +122,11 @@ const CampaignList = () => {
                                 <TableCell>Campaign Address</TableCell>
                                 <TableCell>Category</TableCell>
                                 <TableCell>Campaign Title</TableCell>
-                                <TableCell>cumulativeAdViews</TableCell>
-                                <TableCell>cumulativeAdQueued</TableCell>
-                                <TableCell>Base Ad Spend</TableCell>
-                                <TableCell>Remaining Ad Spend</TableCell>
+                                <TableCell>Ad Content</TableCell>
+                                <TableCell>Total Views</TableCell>
+                                <TableCell>Total Queued</TableCell>
+                                <TableCell>Base Spend</TableCell>
+                                <TableCell>Remaining Spend</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>

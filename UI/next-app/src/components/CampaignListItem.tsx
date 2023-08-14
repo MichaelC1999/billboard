@@ -87,25 +87,26 @@ const CampaignListItem = ({ address, category, selectCampaign }: any) => {
     }
 
     return (
-        <Tooltip title={campaignData.campaignContent} classes={{ tooltip: classes.tooltip }}>
-            <TableRow>
-                <TableCell>
-                    <Typography
-                        variant="body1"
-                        style={{ cursor: 'pointer', textDecoration: 'underline' }}
-                        onClick={() => selectCampaign(address)}
-                    >
-                        {address}
-                    </Typography>
-                </TableCell>
-                <TableCell>{category}</TableCell>
-                <TableCell>{campaignData?.campaignTitle}</TableCell>
-                <TableCell>{campaignData?.cumulativeAdViews?.toString()}</TableCell>
-                <TableCell>{campaignData?.cumulativeAdQueued?.toString()}</TableCell>
-                <TableCell>{formatTokenDecimals(campaignData?.baseAdSpend)} BILL</TableCell>
-                <TableCell>{formatTokenDecimals(campaignData?.remainingAvailableAdSpend)} BILL</TableCell>
-            </TableRow>
-        </Tooltip>
+
+        <TableRow>
+            <TableCell>
+                <Typography
+                    variant="body1"
+                    style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                    onClick={() => selectCampaign(address)}
+                >
+                    {address}
+                </Typography>
+            </TableCell>
+            <TableCell>{category}</TableCell>
+            <TableCell>{campaignData?.campaignTitle}</TableCell>
+            <TableCell><Tooltip title={campaignData.campaignContent} classes={{ tooltip: classes.tooltip }}><span>{campaignData?.campaignContent?.length > 20 ? campaignData?.campaignContent?.slice(0, 20) + "..." : campaignData?.campaignContent}</span></Tooltip></TableCell>
+            <TableCell>{campaignData?.cumulativeAdViews?.toString()}</TableCell>
+            <TableCell>{campaignData?.cumulativeAdQueued?.toString()}</TableCell>
+            <TableCell>{formatTokenDecimals(campaignData?.baseAdSpend)} BILL</TableCell>
+            <TableCell>{formatTokenDecimals(campaignData?.remainingAvailableAdSpend)} BILL</TableCell>
+        </TableRow>
+
     );
 };
 
