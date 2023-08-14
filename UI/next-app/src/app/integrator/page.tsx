@@ -12,7 +12,7 @@ import { darkTheme } from "../../config/theme";
 import Header from "../../components/Header";
 import IntegratorPage from "../../components/IntegratorPage";
 import NetworkManager from "../../components/NetworkManager";
-import { lineaTestnet } from "wagmi/dist/chains";
+import { lineaTestnet } from "wagmi/chains";
 
 const useStyles = makeStyles((theme) => ({
     table: {
