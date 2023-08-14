@@ -2,15 +2,14 @@ import React from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import { useSwitchNetwork } from 'wagmi';
+import { useNetwork, useSwitchNetwork } from 'wagmi';
 import { Box, Button, Typography } from '@material-ui/core';
 
 export function NetworkSwitcher() {
+  const { chain } = useNetwork();
   const { chains, error, isLoading, pendingChainId, switchNetwork } = useSwitchNetwork();
-  console.log('MNETWORKSWITCHER', chains)
 
   const chainToUse = chains.find((x: any) => x.id === process.env.CHAIN_ID);
-  const currentChain: any = chains.find((x: any) => x.id === window?.ethereum?.networkVersion);
 
   return (
     <div>
@@ -26,8 +25,8 @@ export function NetworkSwitcher() {
               This dApp is deployed on {chainToUse?.name}.
             </Typography>
             <Typography variant="body1">
-              You are currently connected to {currentChain?.name ?? currentChain?.id}
-              {currentChain?.unsupported && ' (unsupported)'}
+              You are currently connected to {chain?.name ?? chain?.id}
+              {chain?.unsupported && ' (unsupported)'}
             </Typography>
 
             {switchNetwork && (
@@ -44,7 +43,7 @@ export function NetworkSwitcher() {
                   </Button>
                 ) : (
                   chains.map((x) =>
-                    x.id === currentChain?.id ? null : (
+                    x.id === chain?.id ? null : (
                       <Button
                         key={x.id}
                         variant="outlined"
