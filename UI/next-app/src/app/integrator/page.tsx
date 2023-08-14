@@ -12,6 +12,7 @@ import { darkTheme } from "../../config/theme";
 import Header from "../../components/Header";
 import IntegratorPage from "../../components/IntegratorPage";
 import NetworkManager from "../../components/NetworkManager";
+import { chains, config } from "../../wagmi";
 
 const useStyles = makeStyles((theme) => ({
     table: {
@@ -79,10 +80,10 @@ const IntegratorList = () => {
             console.log(err)
         }
     }
-    console.log(useNetwork())
+    console.log(useNetwork(), chains)
 
     useEffect(() => {
-        console.log("USE EFFECT chain", chain?.id === process.env.CHAIN_ID, chain?.id, process.env.CHAIN_ID)
+        console.log("USE EFFECT chain", chain?.id === process.env.CHAIN_ID, chain?.id, process.env.CHAIN_ID, config)
         if (window.ethereum.networkVersion === process.env.CHAIN_ID) {
             getIntegrators("lend")
             getIntegrators('dex')
