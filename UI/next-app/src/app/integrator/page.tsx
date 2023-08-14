@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Button, Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, makeStyles, ThemeProvider, createMuiTheme, Box } from "@material-ui/core";
 import { useRouter } from 'next/navigation'
 import IntegratorListItem from "../../components/IntegratorListItem";
-import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
+import { useAccount, useNetwork } from "wagmi";
 import FactoryABI from "../../ABIs/Factory.json"
 import { decodeFunctionResult, stringToHex, toBytes, zeroAddress } from "viem";
 import { encodeFunctionData } from 'viem'
@@ -12,7 +12,6 @@ import { darkTheme } from "../../config/theme";
 import Header from "../../components/Header";
 import IntegratorPage from "../../components/IntegratorPage";
 import NetworkManager from "../../components/NetworkManager";
-import { lineaTestnet } from "wagmi/chains";
 
 const useStyles = makeStyles((theme) => ({
     table: {
@@ -35,15 +34,14 @@ const useStyles = makeStyles((theme) => ({
 const IntegratorList = () => {
     const classes = useStyles();
     const router = useRouter();
-    const { chains, error, isLoading, pendingChainId, switchNetwork } = useSwitchNetwork();
-    console.log('MNETWORKSWITCHER FROM INTEGRATOR', chains)
+    const { chain } = useNetwork();
     const currentAccount = window.ethereum.selectedAddress;
 
     const integratorFactoryAddress = process.env.factoryAddress;
     const [integrators, setIntegrators] = useState<{ [x: string]: string[] }>({});
     const [selectedIntegrator, setSelectedIntegrator] = useState<string>("")
 
-    const { isConnected, address } = useAccount()
+    const { isConnected } = useAccount()
 
     useEffect(() => {
         if (!isConnected) {
@@ -81,17 +79,17 @@ const IntegratorList = () => {
             console.log(err)
         }
     }
-    console.log('Integrator', window.ethereum.networkVersion, address, window.ethereum.selectedAddress, process.env.CHAIN_ID, lineaTestnet?.id, useAccount)
+    console.log(useNetwork())
 
     useEffect(() => {
-        console.log('Integrator USE effect', window.ethereum.networkVersion, address, window.ethereum.selectedAddress, process.env.CHAIN_ID)
-        if (window.ethereum.networkVersion == process.env.CHAIN_ID) {
+        console.log("USE EFFECT chain", chain?.id === process.env.CHAIN_ID, chain?.id, process.env.CHAIN_ID)
+        if (window.ethereum.networkVersion === process.env.CHAIN_ID) {
             getIntegrators("lend")
             getIntegrators('dex')
             getIntegrators('nft')
             getIntegrators('other')
         }
-    }, [window.ethereum.networkVersion, address, window.ethereum.selectedAddress])
+    }, [window.ethereum.networkVersion])
 
     if (selectedIntegrator) {
         return <IntegratorPage integratorAddress={selectedIntegrator} closeIntegrator={() => setSelectedIntegrator("")} />
