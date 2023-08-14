@@ -38,11 +38,10 @@ const useStyles = makeStyles((theme) => ({
 
 function CampaignPage({ campaignAddress, closeCampaign }: any) {
     const currentAccount = window.ethereum.selectedAddress;
-    const { isConnected } = useAccount()
     const [account, setAccount] = useState<string | null>(currentAccount)
 
     useEffect(() => {
-        if (!isConnected) {
+        if (!window.ethereum.isConnected()) {
             window?.ethereum?.enable()
         }
         window.ethereum.on('accountsChanged', (accounts: any) => setAccount(accounts[0]));

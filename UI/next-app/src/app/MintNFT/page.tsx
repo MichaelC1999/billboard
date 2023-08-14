@@ -29,9 +29,8 @@ const MintNFT = () => {
     const currentAccount = window.ethereum.selectedAddress;
     const [account, setAccount] = useState<string | null>(currentAccount)
 
-    const { isConnected } = useAccount()
     useEffect(() => {
-        if (!isConnected) {
+        if (!window.ethereum.isConnected()) {
             window?.ethereum?.enable()
         }
         window.ethereum.on('accountsChanged', (accounts: any) => setAccount(accounts[0]));

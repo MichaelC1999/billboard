@@ -23,14 +23,12 @@ const useStyles = makeStyles((theme) => ({
 
 function Integrator() {
     const classes = useStyles();
-    const { isConnected } = useAccount()
     const factoryAddress: any = process.env.factoryAddress;
-
     const currentAccount = window.ethereum.selectedAddress;
     const [account, setAccount] = useState<string | null>(currentAccount)
 
     useEffect(() => {
-        if (!isConnected) {
+        if (!window.ethereum.isConnected()) {
             window?.ethereum?.enable()
         }
         window.ethereum.on('accountsChanged', (accounts: any) => setAccount(accounts[0]));
@@ -101,20 +99,25 @@ function Integrator() {
     ];
 
     const handleSubmit = async () => {
-        const signatures: string[] = [];
-        Object.keys(inputs).forEach((x) => {
-            if (x.includes('functionSignature')) {
-                signatures.push(inputs[x])
-            }
-        })
-        await write({
-            args: [
-                inputs.externalProtocol,
-                inputs.withdrawAddress,
-                inputs.protocolCategory,
-                signatures,
-            ],
-        })
+        try {
+            const signatures: string[] = [];
+            Object.keys(inputs).forEach((x) => {
+                if (x.includes('functionSignature')) {
+                    signatures.push(inputs[x])
+                }
+            })
+            console.log('ABOUT TO WRITE')
+            await write({
+                args: [
+                    inputs.externalProtocol,
+                    inputs.withdrawAddress,
+                    inputs.protocolCategory,
+                    signatures,
+                ],
+            })
+        } catch (err) {
+            console.log(err)
+        }
     };
 
     const handleAddFuncSig = () => {

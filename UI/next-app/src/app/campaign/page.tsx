@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { Button, Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, ThemeProvider } from "@material-ui/core";
 import { useRouter } from 'next/navigation'
 import CampaignListItem from "../../components/CampaignListItem";
-import { useAccount, useNetwork } from "wagmi";
 import FactoryABI from "../../ABIs/Factory.json"
 import { decodeFunctionResult } from "viem";
 import { encodeFunctionData } from 'viem'
@@ -16,8 +15,6 @@ import { NetworkSwitcher } from "../../components/NetworkSwitcher";
 
 const CampaignList = () => {
     const router = useRouter()
-    const { isConnected } = useAccount()
-    const { chain } = useNetwork()
 
     const factoryAddress = process.env.factoryAddress;
     const [campaigns, setCampaigns] = useState<{ [x: string]: string[] }>({});
@@ -27,7 +24,7 @@ const CampaignList = () => {
     const [account, setAccount] = useState<string | null>(currentAccount)
 
     useEffect(() => {
-        if (!isConnected) {
+        if (!window.ethereum.isConnected()) {
             window?.ethereum?.enable()
         }
         window.ethereum.on('accountsChanged', (accounts: any) => setAccount(accounts[0]));

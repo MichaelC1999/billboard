@@ -8,9 +8,6 @@ import { defaultSnapOrigin } from '../config'
 import Header from '../components/Header'
 
 const HomePage = () => {
-
-
-
   return (
     <Header />
   )

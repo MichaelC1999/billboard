@@ -4,8 +4,6 @@ import React, { useEffect, useMemo, useState } from "react";
 
 import { type Address, useContractRead, useContractWrite, useWaitForTransaction, useAccount, useConnect, erc20ABI } from 'wagmi'
 import { BaseError, decodeEventLog, decodeFunctionResult, encodeFunctionData, stringToHex, toBytes, zeroAddress } from "viem";
-import { useRouter } from 'next/navigation'
-import { useNetwork, useBalance } from 'wagmi'
 import InputForm from "../../../components/InputForm";
 import FactoryABI from "../../../ABIs/Factory.json"
 import ProtocolTokenABI from "../../../ABIs/ProtocolToken.json"
@@ -30,12 +28,11 @@ const useStyles = makeStyles((theme) => ({
 
 function CreateCampaign() {
     const classes = useStyles();
-    const { isConnected } = useAccount()
     const currentAccount = window.ethereum.selectedAddress;
     const [account, setAccount] = useState<string | null>(currentAccount)
 
     useEffect(() => {
-        if (!isConnected) {
+        if (!window.ethereum.isConnected()) {
             window?.ethereum?.enable()
         }
         window.ethereum.on('accountsChanged', (accounts: any) => setAccount(accounts[0]));

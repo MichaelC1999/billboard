@@ -1,15 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
-import { useNetwork, useSwitchNetwork } from 'wagmi';
 import { Box, Button, Typography } from '@material-ui/core';
+import { chains } from '../wagmi';
 
 export function NetworkSwitcher() {
-  const { chains, error, isLoading, pendingChainId } = useSwitchNetwork();
-
+  const [errorMessage, setErrorMessage] = useState<string>("")
   const chainToUse = chains.find((x: any) => x.id === process.env.CHAIN_ID);
-  const chain = chains.find((x: any) => x.id == window.ethereum.networkVersion)
+  const chain: any = chains?.find((x: any) => x.id == window.ethereum.networkVersion)
   const switchNetwork = async () => {
     try {
       await window.ethereum.request({
@@ -30,18 +29,17 @@ export function NetworkSwitcher() {
               },
             ],
           });
-        } catch (addError) {
-          // handle "add" error
+        } catch (addError: any) {
+          setErrorMessage(addError.message);
         }
       }
-      // handle other "switch" errors
+      setErrorMessage(switchError.message);
     }
   }
 
   if (window.ethereum.networkVersion == process.env.CHAIN_ID) {
     return null
   }
-
 
   return (
     <div>
@@ -70,7 +68,6 @@ export function NetworkSwitcher() {
                     onClick={() => switchNetwork()}
                   >
                     Switch to {chainToUse.name}
-                    {isLoading && chainToUse.id === pendingChainId && ' (switching)'}
                   </Button>
                 ) : (
                   chains.map((x) =>
@@ -83,7 +80,6 @@ export function NetworkSwitcher() {
                         style={{ margin: '5px' }}
                       >
                         {x.name}
-                        {isLoading && x.id === pendingChainId && ' (switching)'}
                       </Button>
                     )
                   )
@@ -93,7 +89,7 @@ export function NetworkSwitcher() {
 
             <Box mt={2}>
               <Typography variant="body2" color="error">
-                {error?.message}
+                {errorMessage}
               </Typography>
             </Box>
           </Box>
