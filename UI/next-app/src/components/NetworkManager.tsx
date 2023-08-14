@@ -1,22 +1,21 @@
 'use client'
 
 import React, { useState, useEffect } from "react";
-import { useAccount, useNetwork } from "wagmi";
+import { useAccount } from "wagmi";
 import { NetworkSwitcher } from "./NetworkSwitcher";
 
 const NetworkManager = () => {
-    const { chain } = useNetwork()
     const { isConnected, address } = useAccount()
 
     const [showSwitchNetwork, setShowSwitchNetwork] = useState<Boolean>(false)
 
     useEffect(() => {
-        if (chain?.id !== process.env.CHAIN_ID && isConnected) {
+        if (window.ethereum.networkVersion !== process.env.CHAIN_ID && isConnected) {
             setShowSwitchNetwork(true)
         } else {
             setShowSwitchNetwork(false)
         }
-    }, [chain])
+    }, [window.ethereum.networkVersion])
 
     useEffect(() => {
         if (!isConnected) {

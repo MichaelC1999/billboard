@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Button, Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, makeStyles, ThemeProvider, createMuiTheme, Box } from "@material-ui/core";
 import { useRouter } from 'next/navigation'
 import IntegratorListItem from "../../components/IntegratorListItem";
-import { useAccount, useNetwork } from "wagmi";
+import { useAccount, useNetwork, useSwitchNetwork } from "wagmi";
 import FactoryABI from "../../ABIs/Factory.json"
 import { decodeFunctionResult, stringToHex, toBytes, zeroAddress } from "viem";
 import { encodeFunctionData } from 'viem'
@@ -34,7 +34,8 @@ const useStyles = makeStyles((theme) => ({
 const IntegratorList = () => {
     const classes = useStyles();
     const router = useRouter();
-    const { chain } = useNetwork();
+    const { chains, error, isLoading, pendingChainId, switchNetwork } = useSwitchNetwork();
+    console.log('MNETWORKSWITCHER FROM INTEGRATOR', chains)
     const currentAccount = window.ethereum.selectedAddress;
 
     const integratorFactoryAddress = process.env.factoryAddress;
@@ -81,7 +82,6 @@ const IntegratorList = () => {
     }
 
     useEffect(() => {
-        // console.log("USE EFFECT chain", chain, address, isConnected, window.ethereum.selectedAddress, window.ethereum.networkVersion, process.env.CHAIN_ID)
         if (window.ethereum.networkVersion == process.env.CHAIN_ID) {
             getIntegrators("lend")
             getIntegrators('dex')
