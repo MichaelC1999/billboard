@@ -81,7 +81,7 @@ const IntegratorList = () => {
             console.log(err)
         }
     }
-    console.log('Integrator', window.ethereum.networkVersion, address, window.ethereum.selectedAddress, process.env.CHAIN_ID, lineaTestnet?.id)
+    console.log('Integrator', window.ethereum.networkVersion, address, window.ethereum.selectedAddress, process.env.CHAIN_ID, lineaTestnet?.id, useAccount)
 
     useEffect(() => {
         console.log('Integrator USE effect', window.ethereum.networkVersion, address, window.ethereum.selectedAddress, process.env.CHAIN_ID)
