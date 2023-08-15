@@ -193,7 +193,6 @@ function CreateCampaign() {
                     tokenAddress={process.env.protocolTokenAddress}
                     balance={inputs.initialCampaignSpend * (10 ** 18)}
                     addressToApprove={process.env.treasuryAddress}
-                    approvalLoadingSetter={() => null}
                     approveSuccessSetter={handleSubmit}
                 />
             )

@@ -117,12 +117,10 @@ function CampaignPage({ campaignAddress, closeCampaign }: any) {
     const [receiptTxWithdraw, setReceiptTxWithdraw] = useState<any>(null)
 
     const depositSpend = async () => {
-
         const data = encodeFunctionData({
             abi: CampaignABI,
             functionName: 'depositSpend',
-            args: [parseFloat(depositAmount) * (10 ** 18)]
-
+            args: [parseFloat(depositAmount) * (10 ** 18), account]
         })
         const txHash = await window.ethereum.request({
             "method": "eth_sendTransaction",

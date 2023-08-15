@@ -1,38 +1,76 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Address, useAccount, useContractRead, useContractReads, useContractWrite, useSignTypedData, useWaitForTransaction } from 'wagmi'
 import ERC20ABI from "../ABIs/ERC20.json";
+import { decodeEventLog, encodeFunctionData } from 'viem';
 
 
-export function TokenApprove({ tokenAddress, balance, addressToApprove, approvalLoadingSetter, approveSuccessSetter }: any) {
-
-    const { write: approve, data: txapprove, isLoading } = useContractWrite({
-        abi: ERC20ABI,
-        address: tokenAddress,
-        functionName: 'approve',
-        chainId: Number(process.env.CHAIN_ID || 1)
-    })
-
-    const {
-        isSuccess: isSuccessApprove,
-    } = useWaitForTransaction({ hash: txapprove?.hash })
+export function TokenApprove({ tokenAddress, balance, addressToApprove, approveSuccessSetter }: any) {
 
     useEffect(() => {
-        approve({ args: [addressToApprove, balance] })
+        handleApprove()
     }, [])
 
-    useEffect(() => {
-        if (isLoading === true) {
-            approvalLoadingSetter()
-        }
-    }, [isLoading])
+    const approve = async () => {
+        const data = encodeFunctionData({
+            abi: ERC20ABI,
+            functionName: 'approve',
+            args: [addressToApprove, balance]
+        })
+        const txHash = await window.ethereum.request({
+            "method": "eth_sendTransaction",
+            "params": [
+                {
+                    to: tokenAddress,
+                    from: window.ethereum.selectedAddress,
+                    data
+                }
+            ]
+        });
+        return txHash
+    }
 
-    useEffect(() => {
-        if (isSuccessApprove == true) {
+    async function waitForTransactionReceipt(ethereum: any, txHash: string) {
+        return new Promise((resolve, reject) => {
+            const interval = setInterval(async () => {
+                try {
+                    const receipt = await ethereum.request({
+                        method: 'eth_getTransactionReceipt',
+                        params: [txHash]
+                    })
+
+                    if (receipt && receipt.transactionHash) {
+                        clearInterval(interval);
+                        console.log(receipt)
+                        resolve(receipt);
+                    }
+                } catch (error) {
+                    clearInterval(interval);
+                    reject(error);
+                }
+            }, 5000); // Poll every 5 seconds
+        });
+    }
+
+    const handleApprove = async () => {
+        try {
+            const hash: any = await approve()
+            const res: any = await waitForTransactionReceipt(window.ethereum, hash)
+            if (res) {
+                const topics = decodeEventLog({
+                    abi: ERC20ABI,
+                    data: res.logs[0].data,
+                    topics: res.logs[0].topics
+                })
+                const args: any = topics.args
+                console.log(args)
+            }
             approveSuccessSetter(true)
+
+        } catch (err) {
+            console.log(err)
         }
-    }, [isSuccessApprove])
+    }
 
     return null
 }

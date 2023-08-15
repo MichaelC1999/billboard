@@ -29,7 +29,7 @@ const MintNFT = () => {
     const currentAccount = window.ethereum.selectedAddress;
     const [account, setAccount] = useState<string | null>(currentAccount)
 
-    const deployCampaign = async () => {
+    const mintToken = async () => {
         const functionSignature = keccak256(toHex("mintNFT(address)")).slice(0, 10)
         const data = encodeFunctionData({
             abi: IntegratorABI,
@@ -80,25 +80,21 @@ const MintNFT = () => {
         window.ethereum.on('accountsChanged', (accounts: any) => setAccount(accounts[0]));
     }, [])
 
-    const [results, setResults] = useState<any>(null)
+    const [hash, setHash] = useState<any>(null)
 
     useEffect(() => {
-        handleSubmit()
+        if (signature) {
+            handleSubmit()
+        }
     }, [signature])
 
     const handleSubmit = async () => {
         try {
-            const hash: any = await deployCampaign()
+            const hash: any = await mintToken()
             const res: any = await waitForTransactionReceipt(window.ethereum, hash)
             if (res) {
-                const topics = decodeEventLog({
-                    abi: ExampleIntegratorABI,
-                    data: res.logs[0].data,
-                    topics: res.logs[0].topics
-                })
-                const args: any = topics.args
-                console.log(args)
-                setResults(args)
+                setSignature("")
+                setHash(hash)
             }
         } catch (err) {
             console.log(err)
@@ -122,9 +118,9 @@ const MintNFT = () => {
                             All of the interactions with the MintNFT protocol are routed through an integrator contract before minting your NFT.
                         </Typography>
                     </Grid>
-                    {results ? (
+                    {hash ? (
                         <Grid style={{ marginTop: "16px" }} item xs={12}>
-                            <Typography color="textPrimary"><b>NFT Successfully minted! Transaction Hash: {JSON.stringify(results)}</b></Typography>
+                            <Typography color="textPrimary"><b>NFT Successfully minted! Transaction Hash: {hash}</b></Typography>
                         </Grid>
                     ) : <Grid style={{ marginTop: "16px" }} item xs={12}>
                         <Typography>...</Typography>

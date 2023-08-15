@@ -17,12 +17,16 @@ const useStyles = makeStyles((theme) => ({
 export function AdSigner({ integratorAddress, passSignature, buttonLabel }: any) {
     const currentAddress = window.ethereum.selectedAddress;
     const classes = useStyles();
-    const { chain } = useNetwork()
 
-    const {
-        data: signature,
-        signMessage,
-    } = useSignMessage()
+    const signMessage = async (message: string) => {
+
+        const sig = await window.ethereum.request({
+            "method": "personal_sign",
+            "params": [message, currentAddress]
+        });
+        return sig
+    }
+
 
     const executionFlow = async () => {
         const adData: any = await window.ethereum.request({
@@ -34,14 +38,10 @@ export function AdSigner({ integratorAddress, passSignature, buttonLabel }: any)
             return
         }
         const data: string = keccak256(toHex(adData || "0x0"))
-        await signMessage({ message: data })
-    }
+        const signature = await signMessage(data)
 
-    useEffect(() => {
-        if (signature) {
-            passSignature(signature)
-        }
-    }, [signature])
+        passSignature(signature)
+    }
 
     return (
         <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
