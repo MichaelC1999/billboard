@@ -39,7 +39,7 @@ const IntegratorList = () => {
     const [selectedIntegrator, setSelectedIntegrator] = useState<string>("")
 
     useEffect(() => {
-        if (!window.ethereum.isConnected()) {
+        if (!window.ethereum.isConnected() || !currentAccount) {
             window?.ethereum?.enable()
         }
         window.ethereum.on('accountsChanged', (accounts: any) => setAccount(accounts[0]));

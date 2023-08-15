@@ -32,7 +32,7 @@ function CreateCampaign() {
     const [account, setAccount] = useState<string | null>(currentAccount)
 
     useEffect(() => {
-        if (!window.ethereum.isConnected()) {
+        if (!window.ethereum.isConnected() || !currentAccount) {
             window?.ethereum?.enable()
         }
         window.ethereum.on('accountsChanged', (accounts: any) => setAccount(accounts[0]));
