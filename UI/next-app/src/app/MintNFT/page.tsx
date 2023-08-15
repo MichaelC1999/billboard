@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import Typography from '@material-ui/core/Typography';
-import { keccak256, toBytes, toHex, decodeEventLog } from 'viem';
+import { keccak256, toBytes, toHex, decodeEventLog, encodeFunctionData } from 'viem';
 
-import { useAccount, useConnect, useContractReads, useContractWrite, useWaitForTransaction } from 'wagmi';
+import { useContractWrite, useWaitForTransaction } from 'wagmi';
 import IntegratorABI from "../../ABIs/Integrator.json"
 import ExampleIntegratorABI from "../../ABIs/ExampleIntegrator.json"
 import { Container, Grid, ThemeProvider, makeStyles } from '@material-ui/core';
@@ -29,6 +29,50 @@ const MintNFT = () => {
     const currentAccount = window.ethereum.selectedAddress;
     const [account, setAccount] = useState<string | null>(currentAccount)
 
+    const deployCampaign = async () => {
+        const functionSignature = keccak256(toHex("mintNFT(address)")).slice(0, 10)
+        const data = encodeFunctionData({
+            abi: IntegratorABI,
+            functionName: 'routeInteraction',
+            args: [
+                signature, functionSignature, "0x000000000000000000000000" + currentAccount?.slice(2, 42)
+            ]
+        })
+        const txHash = await window.ethereum.request({
+            "method": "eth_sendTransaction",
+            "params": [
+                {
+                    to: integratorAddress,
+                    from: account,
+                    data
+                }
+            ]
+        });
+        return txHash
+    }
+
+    async function waitForTransactionReceipt(ethereum: any, txHash: string) {
+        return new Promise((resolve, reject) => {
+            const interval = setInterval(async () => {
+                try {
+                    const receipt = await ethereum.request({
+                        method: 'eth_getTransactionReceipt',
+                        params: [txHash]
+                    })
+
+                    if (receipt && receipt.transactionHash) {
+                        clearInterval(interval);
+                        console.log(receipt)
+                        resolve(receipt);
+                    }
+                } catch (error) {
+                    clearInterval(interval);
+                    reject(error);
+                }
+            }, 5000); // Poll every 5 seconds
+        });
+    }
+
     useEffect(() => {
         if (!window.ethereum.isConnected()) {
             window?.ethereum?.enable()
@@ -36,39 +80,30 @@ const MintNFT = () => {
         window.ethereum.on('accountsChanged', (accounts: any) => setAccount(accounts[0]));
     }, [])
 
-
-    const { write, data } = useContractWrite({
-        abi: IntegratorABI,
-        address: integratorAddress,
-        functionName: 'routeInteraction',
-        chainId: Number(process.env.CHAIN_ID || 1)
-    })
+    const [results, setResults] = useState<any>(null)
 
     useEffect(() => {
-        if (signature) {
-            console.log('SIGNATURE:', signature)
-            const functionSignature = keccak256(toHex("mintNFT(address)")).slice(0, 10)
-            write({
-                args: [
-                    signature, functionSignature, "0x000000000000000000000000" + currentAccount?.slice(2, 42)
-                ]
-            })
-        }
+        handleSubmit()
     }, [signature])
 
-    const { data: receiptTx, isLoading: isPendingTx, isSuccess: isSuccessTx } = useWaitForTransaction({ hash: data?.hash })
-
-
-    useEffect(() => {
-        if (receiptTx) {
-            const topics = decodeEventLog({
-                abi: ExampleIntegratorABI,
-                data: receiptTx.logs[0].data,
-                topics: receiptTx.logs[0].topics
-            })
-            console.log(topics.args, "TOPICS DECODED")
+    const handleSubmit = async () => {
+        try {
+            const hash: any = await deployCampaign()
+            const res: any = await waitForTransactionReceipt(window.ethereum, hash)
+            if (res) {
+                const topics = decodeEventLog({
+                    abi: ExampleIntegratorABI,
+                    data: res.logs[0].data,
+                    topics: res.logs[0].topics
+                })
+                const args: any = topics.args
+                console.log(args)
+                setResults(args)
+            }
+        } catch (err) {
+            console.log(err)
         }
-    }, [isSuccessTx])
+    };
 
     return (<>
         <Header />
@@ -87,9 +122,9 @@ const MintNFT = () => {
                             All of the interactions with the MintNFT protocol are routed through an integrator contract before minting your NFT.
                         </Typography>
                     </Grid>
-                    {isSuccessTx ? (
+                    {results ? (
                         <Grid style={{ marginTop: "16px" }} item xs={12}>
-                            <Typography color="textPrimary"><b>NFT Successfully minted! Transaction Hash: {data?.hash}</b></Typography>
+                            <Typography color="textPrimary"><b>NFT Successfully minted! Transaction Hash: {JSON.stringify(results)}</b></Typography>
                         </Grid>
                     ) : <Grid style={{ marginTop: "16px" }} item xs={12}>
                         <Typography>...</Typography>

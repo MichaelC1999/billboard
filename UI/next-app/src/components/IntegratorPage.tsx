@@ -14,6 +14,7 @@ import { Box, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHea
 import { darkTheme } from "../config/theme";
 import Header from "./Header";
 import { NetworkSwitcher } from "./NetworkSwitcher";
+import { decodeEventLog, encodeFunctionData } from "viem";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -48,26 +49,69 @@ function IntegratorPage({ integratorAddress, closeIntegrator }: any) {
 
     const [withdrawAmount, setWithdrawAmount] = useState("");
 
-    const { write, data } = useContractWrite({
-        abi: IntegratorABI,
-        address: integratorAddress,
-        functionName: 'integratorWithdraw',
-        chainId: Number(process.env.CHAIN_ID || 1)
-    })
+    const withdrawSpend = async () => {
 
-    const { data: receiptTx, isSuccess: isSuccessTx } = useWaitForTransaction({ hash: data?.hash })
-
-    const handleWithdraw = () => {
-        write({
+        const data = encodeFunctionData({
+            abi: IntegratorABI,
+            functionName: 'integratorWithdraw',
             args: [parseFloat(withdrawAmount) * (10 ** 18)]
+
         })
+        const txHash = await window.ethereum.request({
+            "method": "eth_sendTransaction",
+            "params": [
+                {
+                    to: integratorAddress,
+                    from: account,
+                    data
+                }
+            ]
+        });
+        return txHash
     }
 
-    useEffect(() => {
-        if (isSuccessTx) {
-            console.log("Successful Withdraw", receiptTx)
+    async function waitForTransactionReceipt(ethereum: any, txHash: string) {
+        return new Promise((resolve, reject) => {
+            const interval = setInterval(async () => {
+                try {
+                    const receipt = await ethereum.request({
+                        method: 'eth_getTransactionReceipt',
+                        params: [txHash]
+                    })
+
+                    if (receipt && receipt.transactionHash) {
+                        clearInterval(interval);
+                        console.log(receipt)
+                        resolve(receipt);
+                    }
+                } catch (error) {
+                    clearInterval(interval);
+                    reject(error);
+                }
+            }, 5000); // Poll every 5 seconds
+        });
+    }
+
+    const handleWithdraw = async () => {
+        try {
+            const hash: any = await withdrawSpend()
+            const res: any = await waitForTransactionReceipt(window.ethereum, hash)
+            if (res) {
+                const topics = decodeEventLog({
+                    abi: IntegratorABI,
+                    data: res.logs[0].data,
+                    topics: res.logs[0].topics
+                })
+                const args: any = topics.args
+                console.log(args)
+            }
+            setReceiptTxWithdraw(hash)
+
+        } catch (err) {
+            console.log(err)
         }
-    }, [receiptTx, isSuccessTx])
+    }
+    const [receiptTxWithdraw, setReceiptTxWithdraw] = useState<any>(null)
 
     return (<>
         <Header />
@@ -112,8 +156,8 @@ function IntegratorPage({ integratorAddress, closeIntegrator }: any) {
                             <Button variant="contained" color="primary" onClick={handleWithdraw} size="large" className={classes.button}>Withdraw</Button>
                         </Grid>
                         <Grid style={{ marginTop: "16px" }} item xs={12}>
-                            {isSuccessTx ? (
-                                <Typography color="textPrimary">Withdraw Successful! Transaction Hash: <a style={{ color: "white" }} href={"https://explorer.goerli.linea.build/tx/" + receiptTx?.transactionHash}>{receiptTx?.transactionHash}</a></Typography>
+                            {receiptTxWithdraw ? (
+                                <Typography color="textPrimary">Withdraw Successful! Transaction Hash: <a style={{ color: "white" }} href={"https://explorer.goerli.linea.build/tx/" + receiptTxWithdraw}>{receiptTxWithdraw}</a></Typography>
                             ) : <Typography>No Withdraw</Typography>}
                         </Grid>
                     </Grid>

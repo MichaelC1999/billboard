@@ -15,6 +15,7 @@ import CampaignListItem from "./CampaignListItem";
 import { darkTheme } from "../config/theme";
 import Header from "./Header";
 import { NetworkSwitcher } from "./NetworkSwitcher";
+import { decodeEventLog, encodeFunctionData } from "viem";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -50,48 +51,113 @@ function CampaignPage({ campaignAddress, closeCampaign }: any) {
     const classes = useStyles();
     const [depositAmount, setDepositAmount] = useState("");
     const [withdrawAmount, setWithdrawAmount] = useState("");
-    const { write: withdraw, data: dataWithdraw, } = useContractWrite({
-        abi: CampaignABI,
-        address: campaignAddress,
-        functionName: 'withdrawSpend',
-        chainId: Number(process.env.CHAIN_ID || 1)
-    })
 
-    const { data: receiptTxWithdraw, isLoading: isPendingTxWithdraw, isSuccess: isSuccessTxWithdraw } = useWaitForTransaction({ hash: dataWithdraw?.hash })
+    const withdrawSpend = async () => {
 
-    const handleWithdraw = () => {
-        withdraw({
+        const data = encodeFunctionData({
+            abi: CampaignABI,
+            functionName: 'withdrawSpend',
             args: [parseFloat(withdrawAmount) * (10 ** 18)]
+
         })
+        const txHash = await window.ethereum.request({
+            "method": "eth_sendTransaction",
+            "params": [
+                {
+                    to: campaignAddress,
+                    from: account,
+                    data
+                }
+            ]
+        });
+        return txHash
     }
 
-    useEffect(() => {
-        if (isSuccessTxWithdraw) {
-            console.log("Successful Withdraw", receiptTxWithdraw)
-        }
-    }, [receiptTxWithdraw, isSuccessTxWithdraw])
+    async function waitForTransactionReceipt(ethereum: any, txHash: string) {
+        return new Promise((resolve, reject) => {
+            const interval = setInterval(async () => {
+                try {
+                    const receipt = await ethereum.request({
+                        method: 'eth_getTransactionReceipt',
+                        params: [txHash]
+                    })
 
-
-    const { write: deposit, data: dataDeposit } = useContractWrite({
-        abi: CampaignABI,
-        address: campaignAddress,
-        functionName: 'depositSpend',
-        chainId: Number(process.env.CHAIN_ID || 1)
-    })
-
-    const { data: receiptTxDeposit, isSuccess: isSuccessTxDeposit } = useWaitForTransaction({ hash: dataDeposit?.hash })
-
-    const handleDeposit = () => {
-        deposit({
-            args: [parseFloat(depositAmount) * (10 ** 18), currentAccount]
-        })
+                    if (receipt && receipt.transactionHash) {
+                        clearInterval(interval);
+                        console.log(receipt)
+                        resolve(receipt);
+                    }
+                } catch (error) {
+                    clearInterval(interval);
+                    reject(error);
+                }
+            }, 5000); // Poll every 5 seconds
+        });
     }
 
-    useEffect(() => {
-        if (isSuccessTxDeposit) {
-            console.log("Successful Deposit", receiptTxDeposit)
+    const handleWithdraw = async () => {
+        try {
+            const hash: any = await withdrawSpend()
+            const res: any = await waitForTransactionReceipt(window.ethereum, hash)
+            if (res) {
+                const topics = decodeEventLog({
+                    abi: CampaignABI,
+                    data: res.logs[0].data,
+                    topics: res.logs[0].topics
+                })
+                const args: any = topics.args
+                console.log(args)
+            }
+            setReceiptTxWithdraw(hash)
+
+        } catch (err) {
+            console.log(err)
         }
-    }, [receiptTxDeposit, isSuccessTxDeposit])
+    }
+    const [receiptTxWithdraw, setReceiptTxWithdraw] = useState<any>(null)
+
+    const depositSpend = async () => {
+
+        const data = encodeFunctionData({
+            abi: CampaignABI,
+            functionName: 'depositSpend',
+            args: [parseFloat(depositAmount) * (10 ** 18)]
+
+        })
+        const txHash = await window.ethereum.request({
+            "method": "eth_sendTransaction",
+            "params": [
+                {
+                    to: campaignAddress,
+                    from: account,
+                    data
+                }
+            ]
+        });
+        return txHash
+    }
+
+    const handleDeposit = async () => {
+        try {
+            const hash: any = await depositSpend()
+            const res: any = await waitForTransactionReceipt(window.ethereum, hash)
+            if (res) {
+                const topics = decodeEventLog({
+                    abi: CampaignABI,
+                    data: res.logs[0].data,
+                    topics: res.logs[0].topics
+                })
+                const args: any = topics.args
+                console.log(args)
+            }
+            setReceiptTxDeposit(hash)
+
+        } catch (err) {
+            console.log(err)
+        }
+    }
+    const [receiptTxDeposit, setReceiptTxDeposit] = useState<any>(null)
+
 
     return (<>
         <Header />
@@ -138,7 +204,7 @@ function CampaignPage({ campaignAddress, closeCampaign }: any) {
                                 <Button variant="contained" color="primary" onClick={handleDeposit} size="large" className={classes.button}>Deposit</Button>
                             </Grid>
                             <Grid item xs={12}>
-                                {isSuccessTxDeposit ? (
+                                {receiptTxDeposit ? (
                                     <Typography color="textPrimary">Deposit Successful! Transaction Hash: <a style={{ color: "white" }} href={"https://explorer.goerli.linea.build/tx/" + receiptTxDeposit?.transactionHash}>{receiptTxDeposit?.transactionHash}</a></Typography>
                                 ) : <Typography>No Deposit</Typography>}
                             </Grid>
@@ -156,7 +222,7 @@ function CampaignPage({ campaignAddress, closeCampaign }: any) {
                                 <Button variant="contained" color="primary" onClick={handleWithdraw} size="large" className={classes.button}>Withdraw</Button>
                             </Grid>
                             <Grid item xs={12}>
-                                {isSuccessTxWithdraw ? (
+                                {receiptTxWithdraw ? (
                                     <Typography color="textPrimary">Withdraw Successful! Transaction Hash: <a style={{ color: "white" }} href={"https://explorer.goerli.linea.build/tx/" + receiptTxWithdraw?.transactionHash}>{receiptTxWithdraw?.transactionHash}</a></Typography>
                                 ) : <Typography>No Withdraw</Typography>}
                             </Grid>

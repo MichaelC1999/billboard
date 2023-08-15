@@ -1,12 +1,11 @@
 'use client'
 
 import React, { useState, useEffect } from "react";
-import { Button, Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, makeStyles, ThemeProvider, createMuiTheme, Box } from "@material-ui/core";
+import { Button, Container, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, makeStyles, ThemeProvider } from "@material-ui/core";
 import { useRouter } from 'next/navigation'
 import IntegratorListItem from "../../components/IntegratorListItem";
-import { useAccount, useNetwork } from "wagmi";
 import FactoryABI from "../../ABIs/Factory.json"
-import { decodeFunctionResult, stringToHex, toBytes, zeroAddress } from "viem";
+import { decodeFunctionResult } from "viem";
 import { encodeFunctionData } from 'viem'
 import { darkTheme } from "../../config/theme";
 import Header from "../../components/Header";

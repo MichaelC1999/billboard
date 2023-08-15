@@ -2,7 +2,8 @@ import { Button, TextField, Typography, CircularProgress, Container, Grid, makeS
 import { useContractWrite, useNetwork, useWaitForTransaction } from 'wagmi'
 import ProtocolTokenABI from "../ABIs/ProtocolToken.json"
 import { stringify } from '../utils/stringify'
-import { BaseError } from "viem";
+import { BaseError, decodeEventLog, encodeFunctionData } from "viem";
+import { useState } from "react";
 
 const useStyles = makeStyles((theme) => ({
     button: {
@@ -14,42 +15,84 @@ const useStyles = makeStyles((theme) => ({
 
 function MintProtocolToken() {
     const classes = useStyles();
-    const { chain } = useNetwork();
     const protocolTokenAddress: any = process.env.protocolTokenAddress
     const currentAccount = window.ethereum.selectedAddress;
 
-    const { write, data, error, isLoading, isError } = useContractWrite({
-        abi: ProtocolTokenABI,
-        address: protocolTokenAddress,
-        functionName: 'mint',
-    })
+    const mintCall = async () => {
 
-    const {
-        data: receipt,
-        isLoading: isPending,
-        isSuccess,
-    } = useWaitForTransaction({ hash: data?.hash })
-
-    const handleMint = () => {
-        write({
+        const data = encodeFunctionData({
+            abi: ProtocolTokenABI,
+            functionName: 'mint',
             args: [currentAccount, 10 ** 20],
+
+        })
+        const txHash = await window.ethereum.request({
+            "method": "eth_sendTransaction",
+            "params": [
+                {
+                    to: protocolTokenAddress,
+                    from: currentAccount,
+                    data
+                }
+            ]
+        });
+        return txHash
+    }
+
+    async function waitForTransactionReceipt(ethereum: any, txHash: string) {
+        return new Promise((resolve, reject) => {
+            const interval = setInterval(async () => {
+                try {
+                    const receipt = await ethereum.request({
+                        method: 'eth_getTransactionReceipt',
+                        params: [txHash]
+                    })
+
+                    if (receipt && receipt.transactionHash) {
+                        clearInterval(interval);
+                        console.log(receipt)
+                        resolve(receipt);
+                    }
+                } catch (error) {
+                    clearInterval(interval);
+                    reject(error);
+                }
+            }, 5000); // Poll every 5 seconds
         });
     }
+
+    const handleMint = async () => {
+        try {
+            const hash: any = await mintCall()
+            const res: any = await waitForTransactionReceipt(window.ethereum, hash)
+            if (res) {
+                const topics = decodeEventLog({
+                    abi: protocolTokenAddress,
+                    data: res.logs[0].data,
+                    topics: res.logs[0].topics
+                })
+                const args: any = topics.args
+                console.log(args)
+            }
+            setReceiptTxMint(hash)
+
+        } catch (err) {
+            console.log(err)
+        }
+    }
+    const [receiptTxMint, setReceiptTxMint] = useState<any>(null)
 
     return (
         <Container maxWidth="md" style={{ margin: "32px" }}>
             <Grid container direction="column" alignItems="center">
                 <Typography variant="h6" color="primary">Need test tokens to fund a campaign? Mint with the button below!</Typography>
-                <Button variant="contained" color="primary" disabled={isLoading || window.ethereum.networkVersion + "" !== process.env.CHAIN_ID + ""} onClick={handleMint} className={classes.button}>
+                <Button variant="contained" color="primary" disabled={window.ethereum.networkVersion + "" !== process.env.CHAIN_ID + ""} onClick={handleMint} className={classes.button}>
                     Mint 100 BILL
                 </Button>
 
-                {isLoading && <CircularProgress />}
-                {isPending && <Typography>Transaction pending...</Typography>}
-                {isSuccess && (
-                    <Typography>Transaction Hash: {data?.hash}</Typography>
+                {receiptTxMint && (
+                    <Typography>Transaction Hash: {receiptTxMint}</Typography>
                 )}
-                {isError && <Typography color="error">{(error as BaseError)?.shortMessage}</Typography>}
             </Grid>
         </Container>
     );

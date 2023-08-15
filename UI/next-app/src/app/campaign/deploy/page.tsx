@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 
-import { type Address, useContractRead, useContractWrite, useWaitForTransaction, useAccount, useConnect, erc20ABI } from 'wagmi'
+import { useContractWrite, useWaitForTransaction } from 'wagmi'
 import { BaseError, decodeEventLog, decodeFunctionResult, encodeFunctionData, stringToHex, toBytes, zeroAddress } from "viem";
 import InputForm from "../../../components/InputForm";
 import FactoryABI from "../../../ABIs/Factory.json"
@@ -41,14 +41,6 @@ function CreateCampaign() {
     const factoryAddress: any = process.env.factoryAddress;
     const [allowance, setAllowance] = useState<Number>(0);
 
-    const { data: treasuryAddrOnChain } = useContractRead({
-        abi: FactoryABI,
-        address: factoryAddress,
-        functionName: 'treasuryAddress',
-        args: [],
-        enabled: true,
-    })
-
     useEffect(() => {
         if (window.ethereum.networkVersion == process.env.CHAIN_ID) {
             getAllowance()
@@ -84,39 +76,16 @@ function CreateCampaign() {
         }
     }
 
-    const { write, data } = useContractWrite({
-        abi: FactoryABI,
-        address: factoryAddress,
-        functionName: 'deployNewCampaign',
-        chainId: Number(process.env.CHAIN_ID || 1)
-    })
-
-    const { data: receiptTx, isLoading: isPendingTx, isSuccess: isSuccessTx, isError: isErrorTx } = useWaitForTransaction({ hash: data?.hash })
-
-    useEffect(() => {
-        if (receiptTx) {
-            const topics = decodeEventLog({
-                abi: FactoryABI,
-                data: receiptTx.logs[2].data,
-                topics: receiptTx.logs[2].topics
-            })
-            const args: any = topics.args
-            setDeployedAddr(args._address)
-            const txHash = data?.hash
-        }
-        if (isSuccessTx && !isPendingTx) {
-            setExecuteApproval(false)
-
-        }
-    }, [isSuccessTx])
-
-    const [inputs, setInputs] = useState<any>({});
-    const [deployedAddr, setDeployedAddr] = useState<string>("")
-
-    const handleSubmit = async () => {
-        setExecuteApproval(false)
-        console.log("INPUTS", inputs);
-        await write({
+    const deployCampaign = async () => {
+        const signatures: string[] = [];
+        Object.keys(inputs).forEach((x) => {
+            if (x.includes('functionSignature')) {
+                signatures.push(inputs[x])
+            }
+        })
+        const data = encodeFunctionData({
+            abi: FactoryABI,
+            functionName: 'deployNewCampaign',
             args: [
                 inputs.campaignCategory,
                 inputs.protocolName,
@@ -124,9 +93,67 @@ function CreateCampaign() {
                 inputs.campaignTitle,
                 inputs.campaignContent,
                 zeroAddress
-            ],
+            ]
         })
+        const txHash = await window.ethereum.request({
+            "method": "eth_sendTransaction",
+            "params": [
+                {
+                    to: factoryAddress,
+                    from: account,
+                    data
+                }
+            ]
+        });
+        return txHash
+    }
+
+    async function waitForTransactionReceipt(ethereum: any, txHash: string) {
+        return new Promise((resolve, reject) => {
+            const interval = setInterval(async () => {
+                try {
+                    const receipt = await ethereum.request({
+                        method: 'eth_getTransactionReceipt',
+                        params: [txHash]
+                    })
+
+                    if (receipt && receipt.transactionHash) {
+                        clearInterval(interval);
+                        console.log(receipt)
+                        resolve(receipt);
+                    }
+                } catch (error) {
+                    clearInterval(interval);
+                    reject(error);
+                }
+            }, 5000); // Poll every 5 seconds
+        });
+    }
+
+    const handleSubmit = async () => {
+
+        try {
+            const hash: any = await deployCampaign()
+            const res: any = await waitForTransactionReceipt(window.ethereum, hash)
+            if (res) {
+                const topics = decodeEventLog({
+                    abi: FactoryABI,
+                    data: res.logs[2].data,
+                    topics: res.logs[2].topics
+                })
+                const args: any = topics.args
+                if (args._address) {
+                    setDeployedAddr(args._address)
+                }
+            }
+        } catch (err) {
+            console.log(err)
+        }
+        setExecuteApproval(false)
     };
+
+    const [inputs, setInputs] = useState<any>({});
+    const [deployedAddr, setDeployedAddr] = useState<string>("")
 
     const elements = [
         {
@@ -176,9 +203,7 @@ function CreateCampaign() {
     }
 
     let txDisplay = <Typography>No Transaction</Typography>
-    if (isPendingTx) {
-        txDisplay = <Typography color="primary">Transaction pending...</Typography>
-    }
+
     if (deployedAddr) {
         txDisplay = <Typography color="primary">New Campaign Contract at: <a style={{ color: "white" }} href={"https://explorer.goerli.linea.build/address/" + deployedAddr}>{deployedAddr}</a></Typography>
     }

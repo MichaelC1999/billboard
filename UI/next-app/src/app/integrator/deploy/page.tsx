@@ -1,11 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from "react";
-
-import { type Address, useContractRead, useContractWrite, useWaitForTransaction, useAccount, useConnect } from 'wagmi'
 import { decodeEventLog, encodeFunctionData, stringToHex } from "viem";
-import { useRouter } from 'next/navigation'
-import { useNetwork, useBalance } from 'wagmi'
 import InputForm from "../../../components/InputForm";
 import { Box, Button, Container, Grid, ThemeProvider, Typography, makeStyles } from "@material-ui/core";
 import FactoryABI from "../../../ABIs/Factory.json"

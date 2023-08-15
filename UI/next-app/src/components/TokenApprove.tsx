@@ -6,8 +6,6 @@ import ERC20ABI from "../ABIs/ERC20.json";
 
 
 export function TokenApprove({ tokenAddress, balance, addressToApprove, approvalLoadingSetter, approveSuccessSetter }: any) {
-    const { address: userAddress }: any = useAccount()
-    const [signSuccess, signSuccessSetter] = useState<any>(null)
 
     const { write: approve, data: txapprove, isLoading } = useContractWrite({
         abi: ERC20ABI,
