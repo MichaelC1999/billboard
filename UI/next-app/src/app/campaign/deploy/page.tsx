@@ -39,11 +39,11 @@ function CreateCampaign() {
         window.ethereum.on('accountsChanged', (accounts: any) => setAccount(accounts[0]));
     }, [])
 
-    const factoryAddress: any = process.env.factoryAddress;
+    const factoryAddress: any = process.env.NEXT_PUBLIC_FACTORY_ADDRESS;
     const [allowance, setAllowance] = useState<Number>(0);
 
     useEffect(() => {
-        if (window.ethereum.networkVersion == process.env.CHAIN_ID) {
+        if (window.ethereum.networkVersion == process.env.NEXT_PUBLIC_CHAIN_ID) {
             getAllowance()
         }
     }, [account])
@@ -53,13 +53,13 @@ function CreateCampaign() {
             const encodedTxData = encodeFunctionData({
                 abi: ProtocolTokenABI,
                 functionName: 'allowance',
-                args: [currentAccount, process.env.treasuryAddress]
+                args: [currentAccount, process.env.NEXT_PUBLIC_TREASURY_ADDRESS]
             })
             const dataToDecode: any = await window.ethereum.request({
                 method: "eth_call",
                 params: [{
                     from: currentAccount,
-                    to: process.env.protocolTokenAddress,
+                    to: process.env.NEXT_PUBLIC_PROTOCOL_TOKEN_ADDRESS,
                     data: encodedTxData,
                     accessList: []
                 }, null]
@@ -192,9 +192,9 @@ function CreateCampaign() {
             approvalRender = (<>
                 <ErrorPopup errorMessage={errorMessage} errorMessageCallback={() => setErrorMessage("")} />
                 <TokenApprove
-                    tokenAddress={process.env.protocolTokenAddress}
+                    tokenAddress={process.env.NEXT_PUBLIC_PROTOCOL_TOKEN_ADDRESS}
                     balance={inputs.initialCampaignSpend * (10 ** 18)}
-                    addressToApprove={process.env.treasuryAddress}
+                    addressToApprove={process.env.NEXT_PUBLIC_TREASURY_ADDRESS}
                     approveSuccessSetter={handleSubmit}
                     errorSetter={setErrorMessage}
                 />

@@ -54,7 +54,7 @@ export function AdSigner({ integratorAddress, passSignature, buttonLabel, disabl
     return (
         <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
             <ErrorPopup errorMessage={errorMessage} errorMessageCallback={() => setErrorMessage("")} />
-            <Button variant="contained" color="primary" disabled={window.ethereum.networkVersion + "" !== process.env.CHAIN_ID + ""} onClick={executionFlow} className={classes.button}>
+            <Button variant="contained" color="primary" disabled={window.ethereum.networkVersion + "" !== process.env.NEXT_PUBLIC_CHAIN_ID + ""} onClick={executionFlow} className={classes.button}>
                 {buttonLabel}
             </Button>
         </div>

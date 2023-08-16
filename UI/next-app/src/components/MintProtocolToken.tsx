@@ -14,7 +14,7 @@ const useStyles = makeStyles((theme) => ({
 
 function MintProtocolToken() {
     const classes = useStyles();
-    const protocolTokenAddress: any = process.env.protocolTokenAddress
+    const protocolTokenAddress: any = process.env.NEXT_PUBLIC_PROTOCOL_TOKEN_ADDRESS
     const currentAccount = window.ethereum.selectedAddress;
     const [errorMessage, setErrorMessage] = useState<string>("")
 
@@ -87,7 +87,7 @@ function MintProtocolToken() {
         <Container maxWidth="md" style={{ margin: "32px" }}>
             <Grid container direction="column" alignItems="center">
                 <Typography variant="h6" color="primary">Need test tokens to fund a campaign? Mint with the button below!</Typography>
-                <Button variant="contained" color="primary" disabled={window.ethereum.networkVersion + "" !== process.env.CHAIN_ID + ""} onClick={handleMint} className={classes.button}>
+                <Button variant="contained" color="primary" disabled={window.ethereum.networkVersion + "" !== process.env.NEXT_PUBLIC_CHAIN_ID + ""} onClick={handleMint} className={classes.button}>
                     Mint 100 BILL
                 </Button>
 

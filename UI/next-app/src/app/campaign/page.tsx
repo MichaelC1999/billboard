@@ -17,7 +17,7 @@ import ErrorPopup from "../../components/ErrorPopup";
 const CampaignList = () => {
     const router = useRouter()
 
-    const factoryAddress = process.env.factoryAddress;
+    const factoryAddress = process.env.NEXT_PUBLIC_FACTORY_ADDRESS;
     const [campaigns, setCampaigns] = useState<{ [x: string]: string[] }>({});
     const [selectedCampaign, setSelectedCampaign] = useState<string>("")
 
@@ -65,7 +65,7 @@ const CampaignList = () => {
     }
 
     useEffect(() => {
-        if (window.ethereum.networkVersion == process.env.CHAIN_ID) {
+        if (window.ethereum.networkVersion == process.env.NEXT_PUBLIC_CHAIN_ID) {
             getCampaigns("lend")
             getCampaigns('dex')
             getCampaigns('nft')

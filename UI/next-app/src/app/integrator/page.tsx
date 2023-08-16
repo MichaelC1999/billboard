@@ -35,7 +35,7 @@ const IntegratorList = () => {
     const router = useRouter();
     const currentAccount = window.ethereum.selectedAddress;
     const [account, setAccount] = useState<string | null>(currentAccount)
-    const integratorFactoryAddress = process.env.factoryAddress;
+    const integratorFactoryAddress = process.env.NEXT_PUBLIC_FACTORY_ADDRESS;
     const [integrators, setIntegrators] = useState<{ [x: string]: string[] }>({});
     const [selectedIntegrator, setSelectedIntegrator] = useState<string>("")
     const [errorMessage, setErrorMessage] = useState<string>("")
@@ -80,7 +80,7 @@ const IntegratorList = () => {
     }
 
     useEffect(() => {
-        if (window.ethereum.networkVersion == process.env.CHAIN_ID) {
+        if (window.ethereum.networkVersion == process.env.NEXT_PUBLIC_CHAIN_ID) {
             getIntegrators("lend")
             getIntegrators('dex')
             getIntegrators('nft')

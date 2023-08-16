@@ -20,7 +20,7 @@ const useStyles = makeStyles((theme) => ({
 
 function Integrator() {
     const classes = useStyles();
-    const factoryAddress: any = process.env.factoryAddress;
+    const factoryAddress: any = process.env.NEXT_PUBLIC_FACTORY_ADDRESS;
     const currentAccount = window.ethereum.selectedAddress;
     const [account, setAccount] = useState<string | null>(currentAccount)
     const [errorMessage, setErrorMessage] = useState<string>("")

@@ -7,7 +7,7 @@ import { chains } from '../wagmi';
 
 export function NetworkSwitcher() {
   const [errorMessage, setErrorMessage] = useState<string>("")
-  const chainToUse = chains.find((x: any) => x.id === process.env.CHAIN_ID);
+  const chainToUse = chains.find((x: any) => x.id === process.env.NEXT_PUBLIC_CHAIN_ID);
   const chain: any = chains?.find((x: any) => x.id == window.ethereum.networkVersion)
   const switchNetwork = async () => {
     try {
@@ -25,7 +25,7 @@ export function NetworkSwitcher() {
               {
                 chainId: '0xe704',
                 chainName: 'linea-testnet',
-                rpcUrls: ["https://linea-goerli.infura.io/v3/" + process.env.INFURA_API_KEY],
+                rpcUrls: ["https://linea-goerli.infura.io/v3/" + process.env.NEXT_PUBLIC_INFURA_API_KEY],
               },
             ],
           });
@@ -37,7 +37,7 @@ export function NetworkSwitcher() {
     }
   }
 
-  if (window.ethereum.networkVersion == process.env.CHAIN_ID) {
+  if (window.ethereum.networkVersion == process.env.NEXT_PUBLIC_CHAIN_ID) {
     return null
   }
 

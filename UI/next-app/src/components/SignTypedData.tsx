@@ -9,7 +9,7 @@ export function SignTypedData({ }: any) {
   const domain: any = {
     name: 'Integrator',
     version: '1',
-    chainId: Number(process.env.CHAIN_ID || 1),
+    chainId: Number(process.env.NEXT_PUBLIC_CHAIN_ID || 1),
     verifyingContract: "0xf58695E7c102F49b4B9A036Cd7a3E07f23d9E1D7" //"0x2EBAd578983CE1217C79a73CF4B6f428ef6550B1",
   } as const
 

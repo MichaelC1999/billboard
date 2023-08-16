@@ -27,7 +27,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <WagmiConfig config={config}>
       {mounted && children}
       <Web3Modal
-        projectId={process.env.walletConnectProjectId || ""}
+        projectId={process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || ""}
         ethereumClient={ethereumClient}
       />
     </WagmiConfig>
