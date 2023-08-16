@@ -7,15 +7,13 @@ import Container from '@material-ui/core/Container';
 import Typography from '@material-ui/core/Typography';
 import { ThemeProvider, makeStyles } from '@material-ui/core/styles';
 import CampaignABI from "../ABIs/Campaign.json"
-
-
-import { type Address, useContractRead, useContractWrite, useWaitForTransaction, useAccount, useConnect } from 'wagmi'
 import { Box, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@material-ui/core";
 import CampaignListItem from "./CampaignListItem";
 import { darkTheme } from "../config/theme";
 import Header from "./Header";
 import { NetworkSwitcher } from "./NetworkSwitcher";
 import { decodeEventLog, encodeFunctionData } from "viem";
+import ErrorPopup from "./ErrorPopup";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -40,6 +38,7 @@ const useStyles = makeStyles((theme) => ({
 function CampaignPage({ campaignAddress, closeCampaign }: any) {
     const currentAccount = window.ethereum.selectedAddress;
     const [account, setAccount] = useState<string | null>(currentAccount)
+    const [errorMessage, setErrorMessage] = useState<string>("")
 
     useEffect(() => {
         if (!window.ethereum.isConnected() || !currentAccount) {
@@ -109,9 +108,8 @@ function CampaignPage({ campaignAddress, closeCampaign }: any) {
                 console.log(args)
             }
             setReceiptTxWithdraw(hash)
-
-        } catch (err) {
-            console.log(err)
+        } catch (err: any) {
+            setErrorMessage(err?.message)
         }
     }
     const [receiptTxWithdraw, setReceiptTxWithdraw] = useState<any>(null)
@@ -149,18 +147,17 @@ function CampaignPage({ campaignAddress, closeCampaign }: any) {
                 console.log(args)
             }
             setReceiptTxDeposit(hash)
-
-        } catch (err) {
-            console.log(err)
+        } catch (err: any) {
+            setErrorMessage(err?.message)
         }
     }
     const [receiptTxDeposit, setReceiptTxDeposit] = useState<any>(null)
-
 
     return (<>
         <Header />
         <ThemeProvider theme={darkTheme}>
             <NetworkSwitcher />
+            <ErrorPopup errorMessage={errorMessage} errorMessageCallback={() => setErrorMessage("")} />
             <Button color="secondary" style={{ margin: "24px", minWidth: "120px", textAlign: "center", backgroundColor: "white" }} onClick={closeCampaign}>BACK</Button>
             <Container>
                 <Box className={classes.root}>
@@ -183,7 +180,7 @@ function CampaignPage({ campaignAddress, closeCampaign }: any) {
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
-                                            <CampaignListItem address={campaignAddress} category={""} />
+                                            <CampaignListItem address={campaignAddress} selectCampaign={() => null} category={""} setErrorMessage={setErrorMessage} />
                                         </TableBody>
                                     </Table>
                                 </Table>

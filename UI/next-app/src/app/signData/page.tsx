@@ -5,8 +5,6 @@ import { SignTypedData } from '../../components/SignTypedData';
 import { useContractReads } from 'wagmi';
 import { zeroAddress } from 'viem';
 
-
-
 const SignData = () => {
     // function getSigner(address _myValue, bytes memory _signature)
     const { data: checksData } = useContractReads({

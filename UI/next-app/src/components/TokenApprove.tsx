@@ -5,7 +5,7 @@ import ERC20ABI from "../ABIs/ERC20.json";
 import { decodeEventLog, encodeFunctionData } from 'viem';
 
 
-export function TokenApprove({ tokenAddress, balance, addressToApprove, approveSuccessSetter }: any) {
+export function TokenApprove({ tokenAddress, balance, addressToApprove, approveSuccessSetter, errorSetter }: any) {
 
     useEffect(() => {
         handleApprove()
@@ -67,8 +67,8 @@ export function TokenApprove({ tokenAddress, balance, addressToApprove, approveS
             }
             approveSuccessSetter(true)
 
-        } catch (err) {
-            console.log(err)
+        } catch (err: any) {
+            errorSetter(err?.message)
         }
     }
 

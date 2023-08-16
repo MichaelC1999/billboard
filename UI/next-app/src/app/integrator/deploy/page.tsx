@@ -8,6 +8,7 @@ import FactoryABI from "../../../ABIs/Factory.json"
 import { darkTheme } from "../../../config/theme";
 import Header from "../../../components/Header";
 import { NetworkSwitcher } from "../../../components/NetworkSwitcher";
+import ErrorPopup from "../../../components/ErrorPopup";
 
 const useStyles = makeStyles((theme) => ({
     txContainer: {
@@ -22,6 +23,7 @@ function Integrator() {
     const factoryAddress: any = process.env.factoryAddress;
     const currentAccount = window.ethereum.selectedAddress;
     const [account, setAccount] = useState<string | null>(currentAccount)
+    const [errorMessage, setErrorMessage] = useState<string>("")
     console.log(currentAccount)
     useEffect(() => {
         if (!window.ethereum.isConnected() || !currentAccount) {
@@ -136,8 +138,8 @@ function Integrator() {
                     setDeployedAddr(args._address)
                 }
             }
-        } catch (err) {
-            console.log(err)
+        } catch (err: any) {
+            setErrorMessage(err?.message)
         }
     };
 
@@ -155,9 +157,6 @@ function Integrator() {
     };
 
     let txDisplay = null
-    // if (isPendingTx) {
-    //     txDisplay = <Typography color="primary">Transaction pending...</Typography>
-    // }
     if (deployedAddr) {
         txDisplay = <Typography color="primary">New Integrator for {inputs.protocolName} deployed at: <a style={{ color: "white" }} href={"https://explorer.goerli.linea.build/address/" + deployedAddr}>{deployedAddr}</a></Typography>
     }
@@ -166,6 +165,7 @@ function Integrator() {
         <Header />
         <ThemeProvider theme={darkTheme}>
             <NetworkSwitcher />
+            <ErrorPopup errorMessage={errorMessage} errorMessageCallback={() => setErrorMessage("")} />
             <Container maxWidth="sm">
                 <InputForm inputs={inputs} setInputs={setInputs} handleSubmit={handleSubmit} title="Deploy New Integrator" elements={elements} addElement={handleAddFuncSig} removeElement={handleRemoveLastFuncSig} />
                 <Grid item xs={12} md={8} className={classes.txContainer}>

@@ -1,9 +1,8 @@
 import { Button, TextField, Typography, CircularProgress, Container, Grid, makeStyles } from "@material-ui/core";
-import { useContractWrite, useNetwork, useWaitForTransaction } from 'wagmi'
 import ProtocolTokenABI from "../ABIs/ProtocolToken.json"
-import { stringify } from '../utils/stringify'
 import { BaseError, decodeEventLog, encodeFunctionData } from "viem";
 import { useState } from "react";
+import ErrorPopup from "./ErrorPopup";
 
 const useStyles = makeStyles((theme) => ({
     button: {
@@ -17,6 +16,7 @@ function MintProtocolToken() {
     const classes = useStyles();
     const protocolTokenAddress: any = process.env.protocolTokenAddress
     const currentAccount = window.ethereum.selectedAddress;
+    const [errorMessage, setErrorMessage] = useState<string>("")
 
     const mintCall = async () => {
 
@@ -76,13 +76,14 @@ function MintProtocolToken() {
             }
             setReceiptTxMint(hash)
 
-        } catch (err) {
-            console.log(err)
+        } catch (err: any) {
+            setErrorMessage(err?.message)
         }
     }
     const [receiptTxMint, setReceiptTxMint] = useState<any>(null)
 
-    return (
+    return (<>
+        <ErrorPopup errorMessage={errorMessage} errorMessageCallback={() => setErrorMessage("")} />
         <Container maxWidth="md" style={{ margin: "32px" }}>
             <Grid container direction="column" alignItems="center">
                 <Typography variant="h6" color="primary">Need test tokens to fund a campaign? Mint with the button below!</Typography>
@@ -95,7 +96,7 @@ function MintProtocolToken() {
                 )}
             </Grid>
         </Container>
-    );
+    </>);
 }
 
 export default MintProtocolToken;

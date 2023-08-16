@@ -2,7 +2,6 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 
-import { useContractWrite, useWaitForTransaction } from 'wagmi'
 import { BaseError, decodeEventLog, decodeFunctionResult, encodeFunctionData, stringToHex, toBytes, zeroAddress } from "viem";
 import InputForm from "../../../components/InputForm";
 import FactoryABI from "../../../ABIs/Factory.json"
@@ -14,6 +13,7 @@ import { darkTheme } from "../../../config/theme";
 import { Box, Button, CircularProgress, Grid, ThemeProvider, Typography, makeStyles } from "@material-ui/core";
 import Header from "../../../components/Header";
 import { NetworkSwitcher } from "../../../components/NetworkSwitcher";
+import ErrorPopup from "../../../components/ErrorPopup";
 
 const useStyles = makeStyles((theme) => ({
     formContainer: {
@@ -30,6 +30,7 @@ function CreateCampaign() {
     const classes = useStyles();
     const currentAccount = window.ethereum.selectedAddress;
     const [account, setAccount] = useState<string | null>(currentAccount)
+    const [errorMessage, setErrorMessage] = useState<string>("")
 
     useEffect(() => {
         if (!window.ethereum.isConnected() || !currentAccount) {
@@ -131,7 +132,6 @@ function CreateCampaign() {
     }
 
     const handleSubmit = async () => {
-
         try {
             const hash: any = await deployCampaign()
             const res: any = await waitForTransactionReceipt(window.ethereum, hash)
@@ -146,8 +146,8 @@ function CreateCampaign() {
                     setDeployedAddr(args._address)
                 }
             }
-        } catch (err) {
-            console.log(err)
+        } catch (err: any) {
+            setErrorMessage(err?.message)
         }
         setExecuteApproval(false)
     };
@@ -184,18 +184,21 @@ function CreateCampaign() {
         }
     ];
 
+
     const [executeApproval, setExecuteApproval] = useState<Boolean>(false);
     let approvalRender = null;
     if (executeApproval) {
         if (Number(allowance) < Number(inputs.initialCampaignSpend * (10 ** 18))) {
-            approvalRender = (
+            approvalRender = (<>
+                <ErrorPopup errorMessage={errorMessage} errorMessageCallback={() => setErrorMessage("")} />
                 <TokenApprove
                     tokenAddress={process.env.protocolTokenAddress}
                     balance={inputs.initialCampaignSpend * (10 ** 18)}
                     addressToApprove={process.env.treasuryAddress}
                     approveSuccessSetter={handleSubmit}
+                    errorSetter={setErrorMessage}
                 />
-            )
+            </>)
         } else {
             handleSubmit()
         }
@@ -211,6 +214,8 @@ function CreateCampaign() {
         <Header />
         <ThemeProvider theme={darkTheme}>
             <NetworkSwitcher />
+            <ErrorPopup errorMessage={errorMessage} errorMessageCallback={() => setErrorMessage("")} />
+
             <Box className="createCampaign">
                 <Grid container direction="column" alignItems="center">
                     <Grid item xs={12} md={8} className={classes.formContainer}>

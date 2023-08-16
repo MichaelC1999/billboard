@@ -12,8 +12,7 @@ const useStyles = makeStyles((theme) => ({
     },
 }));
 
-const CampaignListItem = ({ address, category, selectCampaign }: any) => {
-    const router = useRouter()
+const CampaignListItem = ({ address, category, selectCampaign, setErrorMessage }: any) => {
     const classes = useStyles();
 
     const [campaignData, setCampaignData] = useState<{ [x: string]: any } | null>(null);
@@ -48,22 +47,16 @@ const CampaignListItem = ({ address, category, selectCampaign }: any) => {
                     accessList: []
                 }, null]
             })
-            if (valueName === "cumulativeAdViews" || valueName == "cumulativeAdQueued") {
-                console.log(valueName, encodedTxData, dataToDecode)
-            }
             if (dataToDecode?.length > 0) {
                 const decode = decodeFunctionResult({
                     abi: CampaignABI,
                     functionName: valueName,
                     data: dataToDecode
                 })
-                if (valueName === "cumulativeAdViews" || valueName == "cumulativeAdQueued") {
-                    console.log(valueName, decode)
-                }
                 setCampaignData((prevState) => ({ ...prevState, [valueName]: decode }))
             }
-        } catch (err) {
-            console.log(err)
+        } catch (err: any) {
+            setErrorMessage(err?.message)
         }
     }
 

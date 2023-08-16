@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import Typography from '@material-ui/core/Typography';
 import { keccak256, toBytes, toHex, decodeEventLog, encodeFunctionData } from 'viem';
 
-import { useContractWrite, useWaitForTransaction } from 'wagmi';
 import IntegratorABI from "../../ABIs/Integrator.json"
 import ExampleIntegratorABI from "../../ABIs/ExampleIntegrator.json"
 import { Container, Grid, ThemeProvider, makeStyles } from '@material-ui/core';
@@ -13,6 +12,9 @@ import { AdSigner } from '../../components/AdSigner';
 import InstallSnap from '../../components/InstallSnap';
 import Header from '../../components/Header';
 import { NetworkSwitcher } from '../../components/NetworkSwitcher';
+import ErrorPopup from '../../components/ErrorPopup';
+import { getSnap } from '../../utils';
+import { defaultSnapOrigin } from '../../config';
 
 const useStyles = makeStyles((theme) => ({
     container: {
@@ -24,7 +26,7 @@ const MintNFT = () => {
     const classes = useStyles();
 
     const [signature, setSignature] = useState<string>("");
-
+    const [errorMessage, setErrorMessage] = useState<string>("")
     const integratorAddress = "0xa8f50F114BAA9A97F1B80DdAE76C35fd933d624A";
     const currentAccount = window.ethereum.selectedAddress;
     const [account, setAccount] = useState<string | null>(currentAccount)
@@ -96,15 +98,38 @@ const MintNFT = () => {
                 setSignature("")
                 setHash(hash)
             }
-        } catch (err) {
-            console.log(err)
+        } catch (err: any) {
+            setErrorMessage(err?.message)
         }
     };
+
+    const isFlask = async () => {
+        try {
+            const clientVersion = await window.ethereum?.request({
+                method: 'web3_clientVersion',
+            });
+            const isFlaskDetected = (clientVersion as string[])?.includes('flask');
+
+            const installedSnap = await getSnap();
+            if (installedSnap?.id === defaultSnapOrigin) {
+                setSnapInstalled(true)
+            }
+        } catch {
+            return false;
+        }
+    };
+
+    const [snapInstalled, setSnapInstalled] = useState<Boolean>(false)
+
+    useEffect(() => {
+        isFlask()
+    }, [])
 
     return (<>
         <Header />
         <ThemeProvider theme={darkTheme}>
             <NetworkSwitcher />
+            <ErrorPopup errorMessage={errorMessage} errorMessageCallback={() => setErrorMessage("")} />
             <Container maxWidth="lg" className={classes.container}>
                 <Grid container direction="column" alignItems="center">
                     <Grid item xs={12}>
@@ -126,7 +151,7 @@ const MintNFT = () => {
                         <Typography>...</Typography>
                     </Grid>}
                     <Grid style={{ marginTop: "16px" }} item xs={12}>
-                        <AdSigner integratorAddress={integratorAddress} passSignature={(x: string) => setSignature(x)} buttonLabel="Mint me an NFT" />
+                        <AdSigner integratorAddress={integratorAddress} passSignature={(x: string) => setSignature(x)} buttonLabel="Mint me an NFT" disabled={!snapInstalled} />
                     </Grid>
                 </Grid>
                 <InstallSnap displayManualInstall={true} />

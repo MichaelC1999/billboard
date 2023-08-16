@@ -11,6 +11,7 @@ import { darkTheme } from "../../config/theme";
 import Header from "../../components/Header";
 import IntegratorPage from "../../components/IntegratorPage";
 import { NetworkSwitcher } from "../../components/NetworkSwitcher";
+import ErrorPopup from "../../components/ErrorPopup";
 
 const useStyles = makeStyles((theme) => ({
     table: {
@@ -37,6 +38,8 @@ const IntegratorList = () => {
     const integratorFactoryAddress = process.env.factoryAddress;
     const [integrators, setIntegrators] = useState<{ [x: string]: string[] }>({});
     const [selectedIntegrator, setSelectedIntegrator] = useState<string>("")
+    const [errorMessage, setErrorMessage] = useState<string>("")
+
 
     useEffect(() => {
         if (!window.ethereum.isConnected() || !currentAccount) {
@@ -71,8 +74,8 @@ const IntegratorList = () => {
                     return { ...prevState, [category]: decode }
                 })
             }
-        } catch (err) {
-            console.log(err)
+        } catch (err: any) {
+            setErrorMessage(err?.message)
         }
     }
 
@@ -100,7 +103,7 @@ const IntegratorList = () => {
                 <>
                     {integrators[category].map((integratorAddress: string) => {
                         return (
-                            <IntegratorListItem key={integratorAddress} category={category} address={integratorAddress} selectIntegrator={(x: string) => setSelectedIntegrator(x)} />
+                            <IntegratorListItem key={integratorAddress} category={category} address={integratorAddress} setErrorMessage={setErrorMessage} selectIntegrator={(x: string) => setSelectedIntegrator(x)} />
                         )
                     })}
                 </>
@@ -126,6 +129,7 @@ const IntegratorList = () => {
         <Header />
         <ThemeProvider theme={darkTheme}>
             <NetworkSwitcher />
+            <ErrorPopup errorMessage={errorMessage} errorMessageCallback={() => setErrorMessage("")} />
             <Container maxWidth="xl">
                 <Typography variant="h3" color="primary" className={classes.title}>
                     Integrators

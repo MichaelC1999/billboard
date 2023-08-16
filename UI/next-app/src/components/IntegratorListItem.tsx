@@ -2,12 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import { TableCell, TableRow, CircularProgress, Typography } from "@material-ui/core";
-import { useRouter } from "next/navigation";
 import { decodeFunctionResult, encodeFunctionData } from "viem";
 import IntegratorABI from '../ABIs/Integrator.json';
 
-const IntegratorListItem = ({ address, category, selectIntegrator }: any) => {
-    const router = useRouter()
+const IntegratorListItem = ({ address, category, selectIntegrator, setErrorMessage }: any) => {
     const [integratorData, setIntegratorData] = useState<{ [x: string]: any } | null>(null);
     const currentAccount = window.ethereum.selectedAddress;
     const formatTokenDecimals = (decode: any) => {
@@ -49,8 +47,8 @@ const IntegratorListItem = ({ address, category, selectIntegrator }: any) => {
 
                 setIntegratorData((prevState) => ({ ...prevState, [valueName]: decode }))
             }
-        } catch (err) {
-            console.log(valueName, err)
+        } catch (err: any) {
+            setErrorMessage(valueName + " - " + err?.message)
         }
     }
 

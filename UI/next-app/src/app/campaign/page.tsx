@@ -11,6 +11,7 @@ import { darkTheme } from "../../config/theme";
 import Header from "../../components/Header";
 import CampaignPage from "../../components/CampaignPage";
 import { NetworkSwitcher } from "../../components/NetworkSwitcher";
+import ErrorPopup from "../../components/ErrorPopup";
 
 
 const CampaignList = () => {
@@ -22,6 +23,8 @@ const CampaignList = () => {
 
     const currentAccount = window.ethereum.selectedAddress;
     const [account, setAccount] = useState<string | null>(currentAccount)
+    const [errorMessage, setErrorMessage] = useState<string>("")
+
 
     useEffect(() => {
         if (!window.ethereum.isConnected() || !currentAccount) {
@@ -56,8 +59,8 @@ const CampaignList = () => {
                     return { ...prevState, [category]: decode }
                 })
             }
-        } catch (err) {
-            console.log(err)
+        } catch (err: any) {
+            setErrorMessage(err?.message)
         }
     }
 
@@ -85,7 +88,7 @@ const CampaignList = () => {
                 <>
                     {campaigns[category].map((campaignAddress: string) => {
                         return (
-                            <CampaignListItem key={campaignAddress} category={category} address={campaignAddress} selectCampaign={(x: string) => setSelectedCampaign(x)} />
+                            <CampaignListItem key={campaignAddress} category={category} address={campaignAddress} setErrorMessage={setErrorMessage} selectCampaign={(x: string) => setSelectedCampaign(x)} />
                         )
                     })}
                 </>
@@ -110,6 +113,8 @@ const CampaignList = () => {
         <Header />
         <ThemeProvider theme={darkTheme}>
             <NetworkSwitcher />
+            <ErrorPopup errorMessage={errorMessage} errorMessageCallback={() => setErrorMessage("")} />
+
             <Container maxWidth="xl">
                 <Typography style={{ margin: "16px 0" }} variant="h3" color="primary" gutterBottom>
                     Campaigns

@@ -56,9 +56,6 @@ contract Integrator {
         return signatures;
     }
 
-    /// signature is a signed message from the frontend that confirms the current ad campaign was read from the front end
-    /// functionSignature is the function to be called on ExampleIntegrator
-    /// functionParams holds the params to be called on the ExampleIntegrator
     /// @notice Triggers an interaction on the integrated protocol.
     /// @param signature The signed message from the frontend, confirming that the user viewed this campaign content in the metamask snap
     /// @param functionSignature The hashed bytes4 signature of the function to be called.

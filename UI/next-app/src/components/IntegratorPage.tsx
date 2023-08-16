@@ -6,8 +6,6 @@ import TextField from '@material-ui/core/TextField';
 import Container from '@material-ui/core/Container';
 import Typography from '@material-ui/core/Typography';
 import { ThemeProvider, makeStyles } from '@material-ui/core/styles';
-
-import { type Address, useContractRead, useContractWrite, useWaitForTransaction, useAccount, useConnect } from 'wagmi'
 import IntegratorABI from "../ABIs/Integrator.json"
 import IntegratorListItem from "./IntegratorListItem";
 import { Box, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@material-ui/core";
@@ -15,6 +13,7 @@ import { darkTheme } from "../config/theme";
 import Header from "./Header";
 import { NetworkSwitcher } from "./NetworkSwitcher";
 import { decodeEventLog, encodeFunctionData } from "viem";
+import ErrorPopup from "./ErrorPopup";
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -38,6 +37,7 @@ const useStyles = makeStyles((theme) => ({
 function IntegratorPage({ integratorAddress, closeIntegrator }: any) {
     const currentAccount = window.ethereum.selectedAddress;
     const [account, setAccount] = useState<string | null>(currentAccount)
+    const [errorMessage, setErrorMessage] = useState<string>("")
 
     useEffect(() => {
         if (!window.ethereum.isConnected() || !currentAccount) {
@@ -106,9 +106,8 @@ function IntegratorPage({ integratorAddress, closeIntegrator }: any) {
                 console.log(args)
             }
             setReceiptTxWithdraw(hash)
-
-        } catch (err) {
-            console.log(err)
+        } catch (err: any) {
+            setErrorMessage(err?.message)
         }
     }
     const [receiptTxWithdraw, setReceiptTxWithdraw] = useState<any>(null)
@@ -117,6 +116,7 @@ function IntegratorPage({ integratorAddress, closeIntegrator }: any) {
         <Header />
         <ThemeProvider theme={darkTheme}>
             <NetworkSwitcher />
+            <ErrorPopup errorMessage={errorMessage} errorMessageCallback={() => setErrorMessage("")} />
             <Button color="secondary" style={{ margin: "24px", minWidth: "120px", textAlign: "center", backgroundColor: "white" }} onClick={closeIntegrator}>BACK</Button>
             <Container>
                 <Box className={classes.root}>
@@ -137,7 +137,7 @@ function IntegratorPage({ integratorAddress, closeIntegrator }: any) {
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        <IntegratorListItem address={integratorAddress} category={""} />
+                                        <IntegratorListItem address={integratorAddress} selectedIntegrator={() => null} setErrorMessage={setErrorMessage} category={""} />
                                     </TableBody>
                                 </Table>
                             </TableContainer>

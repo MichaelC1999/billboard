@@ -1,6 +1,6 @@
 'use client'
 
-import { useContext, useEffect } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { Connected } from '../components/Connected'
 import { connectSnap, getSnap } from '../utils'
 import { MetaMaskContext } from '../hooks'
@@ -18,12 +18,15 @@ const useStyles = makeStyles((theme) => ({
 
 export function InstallSnap({ displayManualInstall }: any) {
     const classes = useStyles();
-    const { isConnected } = useAccount()
-    const { chain } = useNetwork()
+
+    const [isFlaskBool, setIsFlaskBool] = useState<Boolean>(false)
 
     useEffect(() => {
-        if (!isConnected) {
+        if (!window?.ethereum?.isConnected()) {
             window?.ethereum?.enable()
+        }
+        if (!displayManualInstall) {
+            installBillboardSnap()
         }
     }, [])
 
@@ -44,12 +47,7 @@ export function InstallSnap({ displayManualInstall }: any) {
                 method: 'web3_clientVersion',
             });
             const isFlaskDetected = (clientVersion as string[])?.includes('flask');
-
-            const installedSnap = await getSnap();
-            console.log(isFlaskDetected, providerEth, installedSnap)
-            if (installedSnap?.id !== defaultSnapOrigin) {
-                installBillboardSnap()
-            }
+            setIsFlaskBool(isFlaskDetected)
             return Boolean(providerEth && isFlaskDetected);
         } catch {
             return false;
@@ -59,7 +57,7 @@ export function InstallSnap({ displayManualInstall }: any) {
     let button = null;
     if (displayManualInstall) {
         button = <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-            <Button variant="contained" color="primary" disabled={window.ethereum.networkVersion + "" !== process.env.CHAIN_ID + ""} onClick={installBillboardSnap} className={classes.button}>
+            <Button variant="contained" color="primary" disabled={window.ethereum.networkVersion + "" !== process.env.CHAIN_ID + "" || !isFlaskBool} onClick={installBillboardSnap} className={classes.button}>
                 Install Billboard Snap
             </Button>
         </div>
