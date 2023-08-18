@@ -7,7 +7,7 @@ import { chains } from '../wagmi';
 
 export function NetworkSwitcher() {
   const [errorMessage, setErrorMessage] = useState<string>("")
-  const chainToUse = chains.find((x: any) => x.id === process.env.NEXT_PUBLIC_CHAIN_ID);
+  const chainToUse = chains.find((x: any) => x.id == process.env.NEXT_PUBLIC_CHAIN_ID);
   const chain: any = chains?.find((x: any) => x.id == window.ethereum.networkVersion)
   const switchNetwork = async () => {
     try {

@@ -8,11 +8,7 @@ const infuraKey: string = process.env.NEXT_PUBLIC_INFURA_API_KEY || ""
 
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [mainnet, goerli, sepolia, localhost, hardhat, arbitrumGoerli, lineaTestnet],
-  [jsonRpcProvider({
-    rpc: () => ({
-      http: `https://linea-goerli.infura.io/v3/${infuraKey}`,
-    }),
-  })],
+  [w3mProvider({ projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || "" })]
 )
 
 export const config = createConfig({

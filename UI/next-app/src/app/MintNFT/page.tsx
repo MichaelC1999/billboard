@@ -103,12 +103,11 @@ const MintNFT = () => {
         }
     };
 
-    const isFlask = async () => {
+    const isSnapInstalled = async () => {
         try {
             const clientVersion = await window.ethereum?.request({
                 method: 'web3_clientVersion',
             });
-            const isFlaskDetected = (clientVersion as string[])?.includes('flask');
 
             const installedSnap = await getSnap();
             if (installedSnap?.id === defaultSnapOrigin) {
@@ -122,7 +121,7 @@ const MintNFT = () => {
     const [snapInstalled, setSnapInstalled] = useState<Boolean>(false)
 
     useEffect(() => {
-        isFlask()
+        isSnapInstalled()
     }, [])
 
     return (<>
@@ -151,7 +150,13 @@ const MintNFT = () => {
                         <Typography>...</Typography>
                     </Grid>}
                     <Grid style={{ marginTop: "16px" }} item xs={12}>
-                        <AdSigner integratorAddress={integratorAddress} passSignature={(x: string) => setSignature(x)} buttonLabel="Mint me an NFT" disabled={!snapInstalled} />
+                        <AdSigner integratorAddress={integratorAddress} passSignature={(x: string) => {
+                            if (x === signature) {
+                                handleSubmit()
+                            } else {
+                                setSignature(x)
+                            }
+                        }} buttonLabel="Mint me an NFT" disabled={!snapInstalled} />
                     </Grid>
                 </Grid>
                 <InstallSnap displayManualInstall={true} />

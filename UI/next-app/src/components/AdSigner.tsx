@@ -3,7 +3,6 @@
 import { Button, makeStyles } from '@material-ui/core'
 import { defaultSnapOrigin } from '../config';
 import { keccak256, toHex } from 'viem';
-import { useNetwork, useSignMessage } from 'wagmi';
 import { useEffect, useState } from 'react';
 import ErrorPopup from './ErrorPopup';
 import { connectSnap } from '../utils';
