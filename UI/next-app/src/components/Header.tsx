@@ -10,11 +10,21 @@ const useStyles = makeStyles((theme) => ({
         marginRight: theme.spacing(3),
         fontFamily: '"Comic Sans MS", cursive, sans-serif',
         fontWeight: 'bold',
-        color: '#000000'
+        color: '#000000',
+
     },
     titleContainer: {
         display: 'flex',
         alignItems: 'center',
+    },
+    titleLink: {
+        textDecoration: "none",
+        '&:hover': {
+            cursor: 'pointer',
+            textDecoration: 'none'
+        },
+        color: '#000000',
+
     },
     link: {
         fontSize: "14px",
@@ -40,7 +50,7 @@ const Header = () => {
                 <Grid container justifyContent="space-between" alignItems="center">
                     <Grid item className={classes.titleContainer}>
                         <Typography variant="h6" className={classes.title}>
-                            BILLBOARD
+                            <a href="/" className={classes.titleLink}>BILLBOARD</a>
                         </Typography>
                         <Typography variant="h6" display="inline">
                             <a href="/campaign" className={classes.link}>Campaigns</a>

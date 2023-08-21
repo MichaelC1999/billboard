@@ -39,8 +39,13 @@ This platform introduces a new revenue stream and marketing strategies for proto
 
 Digital Marketing is a $500 billion dollar industry. As Web3 continues to grow, there's still a need for decentralized, scalable, abuse-resistant marketing protocols. Metamask Snaps provide the perfect environment for this solution.
 
-
 This project was developed for the Consensys NAVH Hackathon.
+
+#### What Problem Does Billboard Solve?
+
+Web3 currently lacks a fully decentralized advertising platform. Digital marketing is a $500 Billion industry, but platforms like Google AdSense are centralized and incompatible with blockchain protocols. DAOs, DeFi protocols, and NFT platforms looking to advertise would have to take steps impossible to execute by Governance vote: opening a bank account and converting ad spend to fiat. Moreover, these platforms can't ensure that the specifics decided upon by token holders are faithfully executed in the ad campaigns.  Without access to these Web2 tools, protocols struggle to publicize their unique services, products, or promotions. Web2 advertising platforms let websites innovate by creating business models that were built off of the ad revenue earned from showing the user relevant ads embedded within free content. Traditional website ad display methods don't fit well within the Web3 environment, where the emphasis is more on transacting value than on consumable content. Even if there was a smart contract equivalent to AdSense, integrating this into a dApp front end would be a nightmare without some modular component to serve the ads. To accommodate ads, they would need to overhaul their front-end design, prove ad views are not manipulated, and potentially redeploy their smart contracts for compatibility.
+
+Billboard presents a revolutionary solution to the Web3 advertising dilemma. In fully decentralized environment, Protocols can launch targeted advertising campaigns, reaching users based on specific criteria. The engaged users are already active in the crypto space, transacting on-chain and interacting with products similar to the advertisements. Billboard's unique design allows ads to be shown in a Metamask Snap, ensuring the user sees the ad at a pivotal moment in their transaction without being obnoxious. With the addition of the Keyring API, the Billboard protocol can guarantee ad view legitimacy, cryptographically ensuring users have seen the ad prior interacting with the dApp. This not only confirms the ad's effectiveness but also instills trust in the advertiser. What's more, Billboard's design ensures easy installation into dApp interfaces. The contract structure is backward compatible with the majority of existing smart contracts. Billboard makes it super easy for a dApp to start earning revenue by showing ads. As more dApps integrate ads into their UX, more protocols will see the value in putting their name in front of all these users, encouraging more dApps to cash in on ad revenue. Rather than just being a forkable smart contract, this design makes a network effect towards widespread adoption until Billboard is the go-to Web3 marketing solution.
 
 #### Important Links
 
@@ -48,6 +53,7 @@ The Billboard Protocol is a set of smart contracts that are meant to be interfac
 
 MintNFT is an example dApp that has its own smart contracts + frontend, but uses a Billboard Integrator + Snap combination to display ads and earn revenue.
 
+- [Billboard Homepage](https://billboard-alpha.vercel.app/)
 - [Billboard Campaigns Dashboard](https://billboard-alpha.vercel.app/campaign)
 - [Billboard Integrator Dashboard](https://billboard-alpha.vercel.app/integrator)
 - [MintNFT Prototype](https://billboard-alpha.vercel.app/MintNFT)
