@@ -2,10 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import Typography from '@material-ui/core/Typography';
-import { keccak256, toBytes, toHex, decodeEventLog, encodeFunctionData } from 'viem';
+import { keccak256, toBytes, toHex, encodeFunctionData } from 'viem';
 
 import IntegratorABI from "../../ABIs/Integrator.json"
-import ExampleIntegratorABI from "../../ABIs/ExampleIntegrator.json"
 import { Container, Grid, ThemeProvider, makeStyles } from '@material-ui/core';
 import { darkTheme } from '../../config/theme';
 import { AdSigner } from '../../components/AdSigner';
@@ -23,13 +22,32 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const MintNFT = () => {
-    const classes = useStyles();
+    const currentAccount = window.ethereum.selectedAddress;
 
+    const classes = useStyles();
     const [signature, setSignature] = useState<string>("");
     const [errorMessage, setErrorMessage] = useState<string>("")
     const integratorAddress = "0xa8f50F114BAA9A97F1B80DdAE76C35fd933d624A";
-    const currentAccount = window.ethereum.selectedAddress;
     const [account, setAccount] = useState<string | null>(currentAccount)
+    const [snapInstalled, setSnapInstalled] = useState<Boolean>(false)
+    const [hash, setHash] = useState<any>(null)
+
+    useEffect(() => {
+        if (!window.ethereum.isConnected() || !currentAccount) {
+            window?.ethereum?.enable()
+        }
+        window.ethereum.on('accountsChanged', (accounts: any) => setAccount(accounts[0]));
+    }, [])
+
+    useEffect(() => {
+        if (signature) {
+            handleSubmit()
+        }
+    }, [signature])
+
+    useEffect(() => {
+        isSnapInstalled()
+    }, [])
 
     const mintToken = async () => {
         const functionSignature = keccak256(toHex("mintNFT(address)")).slice(0, 10)
@@ -71,24 +89,9 @@ const MintNFT = () => {
                     clearInterval(interval);
                     reject(error);
                 }
-            }, 5000); // Poll every 5 seconds
+            }, 5000);
         });
     }
-
-    useEffect(() => {
-        if (!window.ethereum.isConnected() || !currentAccount) {
-            window?.ethereum?.enable()
-        }
-        window.ethereum.on('accountsChanged', (accounts: any) => setAccount(accounts[0]));
-    }, [])
-
-    const [hash, setHash] = useState<any>(null)
-
-    useEffect(() => {
-        if (signature) {
-            handleSubmit()
-        }
-    }, [signature])
 
     const handleSubmit = async () => {
         try {
@@ -118,11 +121,6 @@ const MintNFT = () => {
         }
     };
 
-    const [snapInstalled, setSnapInstalled] = useState<Boolean>(false)
-
-    useEffect(() => {
-        isSnapInstalled()
-    }, [])
 
     return (<>
         <Header />

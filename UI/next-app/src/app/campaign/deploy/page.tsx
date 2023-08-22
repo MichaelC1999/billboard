@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 
-import { BaseError, decodeEventLog, decodeFunctionResult, encodeFunctionData, stringToHex, toBytes, zeroAddress } from "viem";
+import { BaseError, decodeEventLog, decodeFunctionResult, encodeFunctionData, zeroAddress } from "viem";
 import InputForm from "../../../components/InputForm";
 import FactoryABI from "../../../ABIs/Factory.json"
 import ProtocolTokenABI from "../../../ABIs/ProtocolToken.json"
@@ -10,10 +10,39 @@ import ProtocolTokenABI from "../../../ABIs/ProtocolToken.json"
 import MintProtocolToken from "../../../components/MintProtocolToken";
 import { TokenApprove } from "../../../components/TokenApprove";
 import { darkTheme } from "../../../config/theme";
-import { Box, Button, CircularProgress, Grid, ThemeProvider, Typography, makeStyles } from "@material-ui/core";
+import { Box, Grid, ThemeProvider, Typography, makeStyles } from "@material-ui/core";
 import Header from "../../../components/Header";
 import { NetworkSwitcher } from "../../../components/NetworkSwitcher";
 import ErrorPopup from "../../../components/ErrorPopup";
+
+const elements = [
+    {
+        label: "Campaign Title",
+        name: "campaignTitle",
+        type: "text"
+    },
+    {
+        label: "Protocol Name",
+        name: "protocolName",
+        type: "text"
+    },
+    {
+        label: "Campaign Content",
+        name: "campaignContent",
+        type: "text"
+    },
+    {
+        label: "Initial Campaign Spend",
+        name: "initialCampaignSpend",
+        type: "number"
+    },
+    {
+        label: "Campaign Category",
+        name: "campaignCategory",
+        type: "select",
+        options: ["lend", "nft", "dex", "other"]
+    }
+];
 
 const useStyles = makeStyles((theme) => ({
     formContainer: {
@@ -31,6 +60,11 @@ function CreateCampaign() {
     const currentAccount = window.ethereum.selectedAddress;
     const [account, setAccount] = useState<string | null>(currentAccount)
     const [errorMessage, setErrorMessage] = useState<string>("")
+    const [submitInitialized, setSubmitInitialized] = useState<Boolean>(false)
+    const [inputs, setInputs] = useState<any>({});
+    const [deployedAddr, setDeployedAddr] = useState<string>("")
+    const [executeApproval, setExecuteApproval] = useState<Boolean>(false);
+    const [allowance, setAllowance] = useState<Number>(0);
 
     useEffect(() => {
         if (!window.ethereum.isConnected() || !currentAccount) {
@@ -39,14 +73,26 @@ function CreateCampaign() {
         window.ethereum.on('accountsChanged', (accounts: any) => setAccount(accounts[0]));
     }, [])
 
-    const factoryAddress: any = process.env.NEXT_PUBLIC_FACTORY_ADDRESS;
-    const [allowance, setAllowance] = useState<Number>(0);
-
     useEffect(() => {
         if (window.ethereum.networkVersion == process.env.NEXT_PUBLIC_CHAIN_ID) {
             getAllowance()
         }
     }, [account])
+
+    useEffect(() => {
+        if (submitInitialized) {
+            submitExecution()
+        }
+
+    }, [submitInitialized])
+
+    useEffect(() => {
+        if (executeApproval && Number(allowance) >= Number(inputs.initialCampaignSpend * (10 ** 18))) {
+            setSubmitInitialized(true)
+        }
+    }, [executeApproval])
+
+    const factoryAddress: any = process.env.NEXT_PUBLIC_FACTORY_ADDRESS;
 
     const getAllowance = async () => {
         try {
@@ -131,7 +177,7 @@ function CreateCampaign() {
         });
     }
 
-    const handleSubmit = async () => {
+    const submitExecution = async () => {
         try {
             const hash: any = await deployCampaign()
             const res: any = await waitForTransactionReceipt(window.ethereum, hash)
@@ -150,42 +196,9 @@ function CreateCampaign() {
             setErrorMessage(err?.message)
         }
         setExecuteApproval(false)
-    };
+        setSubmitInitialized(false)
+    }
 
-    const [inputs, setInputs] = useState<any>({});
-    const [deployedAddr, setDeployedAddr] = useState<string>("")
-
-    const elements = [
-        {
-            label: "Campaign Title",
-            name: "campaignTitle",
-            type: "text"
-        },
-        {
-            label: "Protocol Name",
-            name: "protocolName",
-            type: "text"
-        },
-        {
-            label: "Campaign Content",
-            name: "campaignContent",
-            type: "text"
-        },
-        {
-            label: "Initial Campaign Spend",
-            name: "initialCampaignSpend",
-            type: "number"
-        },
-        {
-            label: "Campaign Category",
-            name: "campaignCategory",
-            type: "select",
-            options: ["lend", "nft", "dex", "other"]
-        }
-    ];
-
-
-    const [executeApproval, setExecuteApproval] = useState<Boolean>(false);
     let approvalRender = null;
     if (executeApproval) {
         if (Number(allowance) < Number(inputs.initialCampaignSpend * (10 ** 18))) {
@@ -195,12 +208,10 @@ function CreateCampaign() {
                     tokenAddress={process.env.NEXT_PUBLIC_PROTOCOL_TOKEN_ADDRESS}
                     balance={inputs.initialCampaignSpend * (10 ** 18)}
                     addressToApprove={process.env.NEXT_PUBLIC_TREASURY_ADDRESS}
-                    approveSuccessSetter={handleSubmit}
+                    approveSuccessSetter={() => setSubmitInitialized(true)}
                     errorSetter={setErrorMessage}
                 />
             </>)
-        } else {
-            handleSubmit()
         }
     }
 
@@ -208,6 +219,9 @@ function CreateCampaign() {
 
     if (deployedAddr) {
         txDisplay = <Typography color="primary">New Campaign Contract at: <a style={{ color: "white" }} href={"https://explorer.goerli.linea.build/address/" + deployedAddr}>{deployedAddr}</a></Typography>
+    } else if (submitInitialized) {
+        txDisplay = <Typography color="primary">Deploying New Campaign Contract...</Typography>
+
     }
 
     return (<>

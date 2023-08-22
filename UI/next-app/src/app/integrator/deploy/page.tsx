@@ -1,9 +1,9 @@
 'use client'
 
 import React, { useEffect, useState } from "react";
-import { decodeEventLog, encodeFunctionData, stringToHex } from "viem";
+import { decodeEventLog, encodeFunctionData } from "viem";
 import InputForm from "../../../components/InputForm";
-import { Box, Button, Container, Grid, ThemeProvider, Typography, makeStyles } from "@material-ui/core";
+import { Container, Grid, ThemeProvider, Typography, makeStyles } from "@material-ui/core";
 import FactoryABI from "../../../ABIs/Factory.json"
 import { darkTheme } from "../../../config/theme";
 import Header from "../../../components/Header";
@@ -24,7 +24,10 @@ function Integrator() {
     const currentAccount = window.ethereum.selectedAddress;
     const [account, setAccount] = useState<string | null>(currentAccount)
     const [errorMessage, setErrorMessage] = useState<string>("")
-    console.log(currentAccount)
+    const [inputs, setInputs] = useState<any>({});
+    const [deployedAddr, setDeployedAddr] = useState<string>("")
+    const [funcSigCount, setFuncSigCount] = useState(1);
+
     useEffect(() => {
         if (!window.ethereum.isConnected() || !currentAccount) {
             window?.ethereum?.enable()
@@ -61,10 +64,6 @@ function Integrator() {
         });
         return txHash
     }
-
-    const [inputs, setInputs] = useState<any>({});
-    const [deployedAddr, setDeployedAddr] = useState<string>("")
-    const [funcSigCount, setFuncSigCount] = useState(1);
 
     const elements = [
         {

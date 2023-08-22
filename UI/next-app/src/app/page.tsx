@@ -7,9 +7,9 @@ const useStyles = makeStyles((theme) => ({
   section: {
     marginTop: theme.spacing(4),
     marginBottom: theme.spacing(4),
-    maxWidth: '70%',  // Adjust this to change the width
-    marginLeft: '15%',  // Adjust for centering
-    marginRight: '15%',  // Adjust for centering
+    maxWidth: '76%',  // Adjust this to change the width
+    marginLeft: '12%',  // Adjust for centering
+    marginRight: '12%',  // Adjust for centering
   },
   image: {
     width: '100%',
@@ -18,18 +18,25 @@ const useStyles = makeStyles((theme) => ({
   distinctSection: {
     backgroundColor: theme.palette.grey[200],
     padding: theme.spacing(4, 0),
-    maxWidth: '70%',  // Adjust this to change the width
-    marginLeft: '15%',  // Adjust for centering
-    marginRight: '15%',  // Adjust for centering
+    maxWidth: '76%',  // Adjust this to change the width
+    marginLeft: '12%',  // Adjust for centering
+    marginRight: '12%',  // Adjust for centering
   },
   whiteText: {
     color: '#fff'
   },
   whiteLink: {
     color: '#fff',
+    textDecoration: 'underline',
     '&:hover': {
       cursor: 'pointer',
-      textDecoration: 'underline',
+    }
+  },
+  blackLink: {
+    color: 'black',
+    textDecoration: 'underline',
+    '&:hover': {
+      cursor: 'pointer',
     }
   },
 }));
@@ -40,7 +47,7 @@ const HomePage = () => {
   return (
     <>
       <Header />
-      <Container maxWidth="xl">
+      <Container maxWidth={false}>
         <Box className={`${classes.section} ${classes.distinctSection}`}>
           <Grid container spacing={3}>
             <Grid item xs={12} md={4}>
@@ -49,16 +56,22 @@ const HomePage = () => {
               </div>
             </Grid>
             <Grid item xs={12} md={8}>
-              <Typography variant="h2" gutterBottom>
-                Billboard Snap: How Digital Marketing Becomes Web3
-              </Typography>
-              <Typography variant="body1" style={{ fontSize: "18px" }}>
-                Billboard is a decentralized advertising platform designed for the Web3 ecosystem. By utilizing Metamask Snaps integrated into the user interface of dApps, Billboard enables protocols to display ad campaigns and earn revenue without relying on centralized elements. This introduces a new revenue stream for protocols, showcasing ads at the most crucial point in the user flow, ensuring they're engaging without being obtrusive. As the $500 billion Digital Marketing industry looks to integrate with Web3, Billboard provides the perfect decentralized solution.
-              </Typography>
-              <br></br>
-              <Typography variant="body1" style={{ fontSize: "18px" }}>
-                When dApps implement Billboard on the frontend, the custom built Metamask Snap calls methods behind the scenes to make on-chain read calls for ad content. Aside from displaying the ad, the Snap has a role in verifying that users are served the intended ad content. With development of the Keyring API, Billboard is building a robust encryption system within Snaps, ensuring authenticated and verified ad views by the users. While Snaps doesn't support the rendering of images, the inclusion of this feature will unlock Billboard's full potential.
-              </Typography>
+              <div style={{ margin: "8px" }}>
+                <Typography variant="h2" gutterBottom>
+                  Billboard Snap: How Digital Marketing Becomes Web3
+                </Typography>
+                <Typography variant="body1" style={{ fontSize: "18px" }}>
+                  Billboard is a decentralized advertising platform designed for the Web3 ecosystem. By utilizing Metamask Snaps integrated into the user interface of dApps, Billboard enables protocols to display ad campaigns and earn revenue without relying on centralized elements. This introduces a new revenue stream for protocols, showcasing ads at the most crucial point in the user flow, ensuring they're engaging without being obtrusive. As the $500 billion Digital Marketing industry looks to integrate with Web3, Billboard provides the perfect decentralized solution.
+                </Typography>
+                <br></br>
+                <Typography variant="body1" style={{ fontSize: "18px" }}>
+                  When dApps implement Billboard on the frontend, the custom built Metamask Snap calls methods behind the scenes to make on-chain read calls for ad content. Aside from displaying the ad, the Snap has a role in verifying that users are served the intended ad content. With development of the Keyring API, Billboard is building a robust encryption system within Snaps, ensuring authenticated and verified ad views by the users. While Snaps doesn't support the rendering of images, the inclusion of this feature will unlock Billboard's full potential.
+                </Typography>
+                <br />
+                <Typography variant="body1" style={{ fontSize: "22px" }} component={Link} className={classes.blackLink} target="_blank" href="https://www.youtube.com/watch?v=7jIwCWu5Hzs">
+                  Watch the Billboard Protocol Pitch Here
+                </Typography>
+              </div>
             </Grid>
           </Grid>
         </Box>
@@ -66,7 +79,7 @@ const HomePage = () => {
         <Divider className={classes.section} />
 
         <Box className={classes.section}>
-          <Typography variant="h4" component={Link} className={classes.whiteLink} href="/campaign">
+          <Typography variant="h3" className={classes.whiteText}>
             Campaigns
           </Typography>
           <Typography variant="body1" paragraph className={classes.whiteText}>
@@ -78,8 +91,8 @@ const HomePage = () => {
         </Box>
 
         <Box className={classes.section}>
-          <Typography variant="h4" component={Link} className={classes.whiteLink} href="/integrator">
-            Integrator
+          <Typography variant="h3" className={classes.whiteText}>
+            Integrators
           </Typography>
           <Typography variant="body1" paragraph className={classes.whiteText}>
             An Integrator is a contract within the Billboard protocol functioning as middleware for a dApp looking to earn ad revenue. When a dApp decides to implement Billboard ads, it deploys an instance of this contract. After showing the user an ad, the Integrator verifies on-chain that an ad was served, registers the ad view, and then completes the initial user-requested transaction. The Billboard Integrator Dashboard aids in deploying new integrators and visualizing revenues and metrics of existing ones.
@@ -90,7 +103,7 @@ const HomePage = () => {
         </Box>
 
         <Box className={classes.section}>
-          <Typography variant="h4" component={Link} className={classes.whiteLink} href="/MintNFT">
+          <Typography variant="h3" className={classes.whiteText}>
             MintNFT
           </Typography>
           <Typography variant="body1" paragraph className={classes.whiteText}>

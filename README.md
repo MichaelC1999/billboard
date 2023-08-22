@@ -1,10 +1,14 @@
 # BILLBOARD
 
+https://billboard-alpha.vercel.app/
+
 ## TABLE OF CONTENTS
 
 - [BILLBOARD](#billboard)
 - [SUBMISSION DETAILS](#submission-details)
   - [Project Description](#project-description)
+    - [Pitch Video](#billboard-pitch)
+    - [What Problem does Billboard Solve?](#what-problem-does-billboard-solve)
     - [Important Links](#important-links)
     - [Contract Addresses](#protocol-level-contract-addresses)
   - [Bounties](#bounties)
@@ -40,6 +44,10 @@ This platform introduces a new revenue stream and marketing strategies for proto
 Digital Marketing is a $500 billion dollar industry. As Web3 continues to grow, there's still a need for decentralized, scalable, abuse-resistant marketing protocols. Metamask Snaps provide the perfect environment for this solution.
 
 This project was developed for the Consensys NAVH Hackathon.
+
+#### Billboard Pitch
+
+[Watch here on Youtube](https://www.youtube.com/watch?v=7jIwCWu5Hzs)
 
 #### What Problem Does Billboard Solve?
 
